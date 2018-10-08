@@ -9,7 +9,7 @@ pca <- prcomp(subset$FTIR.SG2,
               center = T,
               scale = T)
 
-env.vec <- envfit(pca, pca.data[,20:22])
+env.vec <- envfit(pca, subset[,20:22])
 
 save(pca, env.vec, file = "pca_ord_surf.rda")
 

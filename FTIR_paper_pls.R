@@ -1,4 +1,6 @@
 library(pls)
+library(ggplot2)
+setwd("O:/PhD/Data/Portugal 2018/paper")
 
 load(file = "data.rda")
 
