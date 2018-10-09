@@ -1,21 +1,48 @@
 library(pls)
 library(ggplot2)
+library(MASS)
 setwd("O:/PhD/Data/Portugal 2018/paper")
 
 load(file = "data.rda")
+S.regions <- c(145:154,191:200,371:380,546:555)
+subset$SG2.S.R <- I(subset$FTIR.SG2[,S.regions])
 
 # Predict CPLS scores for test data
 npc = 30
 pls.train <- cppls(Species.HO ~ FTIR.SG2, npc, data = subset, subset = train, scale=T)
 pls.test <- predict(pls.train, newdata = subset[!subset$train,], type = "score")
 
-pls.train.yadd <- cppls(cbind(Species.HO,env) ~ FTIR.SG2 ,npc, data = subset, subset = train, scale=T)
+pls.train.yadd <- cppls(Species.HO ~ FTIR.SG2 + env ,npc, data = subset, subset = train, scale=T)
 pls.test.yadd <- predict(pls.train.yadd, newdata = subset[!subset$train,], type = "score")
 
-plsr.train <- plsr(cbind(Species.HO,env) ~ FTIR.SG2, npc, data = subset, subset = train, scale=T)
+plsr.train <- plsr(Species.HO ~ FTIR.SG2 , npc, data = subset, subset = train, scale=T)
 plsr.test <- predict(plsr.train, newdata = subset[!subset$train,], type = "score")
 
-pls.env <- cppls(env ~ FTIR.SG2, npc, data = subset, scale =T)
+# Using S-regions
+pls.train <- cppls(Species.HO ~ SG2.S.R, npc, data = subset, subset = train, scale=T)
+pls.test <- predict(pls.train, newdata = subset[!subset$train,], type = "score")
+
+pls.train.yadd <- cppls(Species.HO ~ SG2.S.R + env ,npc, data = subset, subset = train, scale=T)
+pls.test.yadd <- predict(pls.train.yadd, newdata = subset[!subset$train,], type = "score")
+
+plsr.train <- cppls(Species.HO ~ FTIR.SG2 + env, npc, data = subset, subset = train, scale=T)
+plsr.test <- predict(plsr.train, newdata = subset[!subset$train,], type = "score")
+
+pls.env <- cppls(env ~ FTIR.SG2, npc, data = subset, subset = train, scale =T)
+pls.env.test <- predict(pls.env, newdata = subset[!subset$train,], type = "response")
+plot(pls.env.test[,1,5], subset$mean_temp[!subset$train], asp = 1)
+mean((subset$mean_temp[!subset$train]-pls.env.test[,1,5])^2)
+
+# Only suber for env modelling
+suber <- subset(subset, Sub_Spec == "suber")
+pls.env <- cppls(env ~ FTIR.SG2, npc, data = suber, subset = train, scale =T)
+pls.env.test <- predict(pls.env, newdata = suber[!suber$train,], type = "response")
+plot(pls.env.test[,1,5], suber$mean_temp[!suber$train], asp = 1)
+
+robur <- subset(subset, Sub_Spec == "robur")
+pls.env <- cppls(env ~ FTIR.SG2, npc, data = robur, subset = train, scale =T)
+pls.env.test <- predict(pls.env, newdata = robur[!robur$train,], type = "response")
+plot(pls.env.test[,1,5], robur$mean_temp[!robur$train], asp = 1)
 
 save(pls.train, pls.test, pls.train.yadd, pls.test.yadd, plsr.train, plsr.test, pls.env, file = "pls.rda")
 
@@ -55,7 +82,7 @@ colnames(error.df)<-c("Components", "Model", "RMSEP")
 ggplot(error.df, aes(Components, RMSEP , colour=Model))+
   geom_line()+theme_bw()+theme(text = element_text(size = 18))
 
-for (i in 1:5){
+for (i in 1:10){
   fitdata1 <- data.frame(Species = subset$Sub_Spec[subset$train],
                          FTIR.score = I(pls.train$scores[,1:i,drop=FALSE]))
   testdata1 <- data.frame(Species = subset$Sub_Spec[!subset$train],
