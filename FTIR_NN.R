@@ -21,14 +21,18 @@ dim(test.x.arr) <- c(ncol(test.x),1,nrow(test.x))
 
 # Neural Network Classifier MLP
 mx.set.seed(0)
-model <- mx.mlp(train.x, train.y, activation = "relu", optimizer = "adam",
-                hidden_node=c(500), array.layout = "rowmajor",
+model <- mx.mlp(train.x, train.y, activation = "tanh", optimizer = "adam",
+                hidden_node=c(700), array.layout = "rowmajor",
                 out_node=6, out_activation="softmax",
-                num.round=60, array.batch.size=100,
+                num.round=100, array.batch.size=100,
                 learning.rate=0.05,# momentum=0.9,
                 eval.metric=mx.metric.accuracy)
 conNN <- pred.fn(model, test.x, test.y)
-save(model, file = "NN_model.rda")
+
+
+mx.model.save(model, "NN_model", 60)
+model<-mx.model.load("NN_model", 60)
+
 graph.viz(model$symbol)
 
 
@@ -85,5 +89,3 @@ model <- mx.model.FeedForward.create(lenet, X=train.x.arr, y=as.numeric(train.y)
                                      epoch.end.callback=mx.callback.log.train.metric(100))
 conM <- pred.fn(model, test.x.arr, test.y)
 conM
-
-
