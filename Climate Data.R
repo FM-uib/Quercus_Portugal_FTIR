@@ -105,7 +105,7 @@ Portugal.gg <- ggplot(data = Portugal.df, aes(x=long, y=lat, group = group,fill 
 print(Portugal.gg)
 
 
-#Rain data from paper
+# Rain data from paper
 setwd("./Climate Data/pt02_ascii/mensal")
 library(stringr)
 library(plyr)
@@ -146,6 +146,13 @@ ggplot(mean_yearly, aes(longitude, latitude))+
   scale_fill_gradientn(colours = c("#CCE5FF","#66B2FF","#000099"))+
   geom_point(data=subset(Portugal, Species == "robur" | Species == "rotundifolia" | Species == "suber" | Species == "faginea" | Species == "coccifera" | Species == "lusitanica"), aes(Longitude, Latitude, colour = Species))+
   scale_color_brewer(palette = "Set1")
+
+mean_april <- data.df %>%
+  filter(Month == "April" & Year > 1993) %>%
+  group_by(ID) %>%
+  summarise(latitude = first(latitude),
+            longitude = first(longitude),
+            mean.april.precip = mean(precipitation))
   
 library(raster)
 
@@ -172,7 +179,7 @@ P1 = Polygon(coords)
 Ps1 = SpatialPolygons(list(Polygons(list(P1), ID = "a")), 
                       proj4string=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
 
-Port <- getData("GADM", country="Portugal", level = 0)
+#Port <- getData("GADM", country="Portugal", level = 0)
 setwd("O:/PhD/Data/WorldClim")
 fn <- "wc2.0_30s_tavg_04.tif"
 fn <- "wc2.0_30s_tavg_05.tif"
