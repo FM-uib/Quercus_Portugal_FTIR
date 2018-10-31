@@ -19,8 +19,8 @@ Portugal.gg <- ggplot(data = Portugal.df) +
   coord_equal(ratio = 1) +
   theme_classic() +
   geom_point(data = subset, aes(x = Longitude, y = Latitude, 
-                                color = Sub_Spec, shape = Sub_Spec, size = 4)) +
-  scale_shape_manual(values = c(0:2,4:6))
+                                color = Sub_Spec, shape = Section, size = 3)) +
+  scale_shape_manual(values = c(15:17))
   
 print(Portugal.gg)
 theme(legend.position = "none", title = element_blank(),
