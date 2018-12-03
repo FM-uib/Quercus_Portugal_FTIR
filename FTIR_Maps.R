@@ -2,6 +2,11 @@
 library(ggplot2)
 library(rgdal)
 library(maptools)
+library(dplyr)
+
+setwd("O:/PhD/Data/Portugal 2018/paper")
+
+load(file = "data.rda")
 
 # Portugal Map
 setwd("O:/PhD/Data/Portugal 2018")
@@ -27,9 +32,36 @@ theme(legend.position = "none", title = element_blank(),
       axis.text = element_blank())
 
 # Points of trees
-setwd("O:/PhD/Data/Portugal 2018/paper")
+subset. <- subset[,c("ID", "Sub_Spec", "Group", "Location", "Latitude", "Longitude")]
+subset.$Sub_Spec <- factor(subset.$Sub_Spec)
 
-load(file = "data.rda")
+subset. <- subset. %>%
+  group_by(Group) %>%
+  mutate(mean.lat = mean(Latitude), mean.long = mean(Longitude)) %>%
+  group_by(Group, Sub_Spec) %>%
+  mutate(n = n_distinct(ID))
 
-ggplot(data = subset) +
-  geom_point(data = subset, aes(x = Longitude, y = Latitude, color = Sub_Spec))
+
+lat_lon_transform <- function(x, variable, factor, offset){
+  names(offset) <- levels(x[,factor])
+  new <- as.vector(x[,variable] + sapply(x[,factor], function(x) offset[x]))
+  x$new <- new[,variable]
+  names(x)[names(x) == "new"] <- paste("new", variable, sep = ".")
+  return(x)
+}
+
+subset_ <- lat_lon_transform(x = subset., variable = "mean.lat", factor = "Sub_Spec", 
+                             offset = .1 * c(0,1,-1,-1,1,0))
+subset_ <- lat_lon_transform(x = subset_, variable = "mean.long", factor = "Sub_Spec", 
+                             offset = .1 * c(.5,.5,-.5,.5,-.5,-.5))
+
+ggplot(data = subset_) +
+  geom_point(data = subset_, aes(x = new.mean.long, y = new.mean.lat, color = Sub_Spec, size = n))
+
+  summarize(mean.lat = mean(Latitude), mean.long = mean(Longitude))
+
+
+
+ggplot(data = subset.) +
+  geom_point(data = subset., aes(x = Longitude, y = Latitude, color = Sub_Spec))
+
