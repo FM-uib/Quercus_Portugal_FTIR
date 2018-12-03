@@ -32,7 +32,7 @@ theme(legend.position = "none", title = element_blank(),
       axis.text = element_blank())
 
 # Points of trees
-subset. <- subset[,c("ID", "Sub_Spec", "Group", "Location", "Latitude", "Longitude")]
+subset. <- subset[,c("ID", "Section", "Sub_Spec", "Group", "Location", "Latitude", "Longitude")]
 subset.$Sub_Spec <- factor(subset.$Sub_Spec)
 
 subset. <- subset. %>%
@@ -51,17 +51,25 @@ lat_lon_transform <- function(x, variable, factor, offset){
 }
 
 subset_ <- lat_lon_transform(x = subset., variable = "mean.lat", factor = "Sub_Spec", 
-                             offset = .1 * c(0,1,-1,-1,1,0))
+                             offset = .15 * c(0,1,-1,-1,1,0))
 subset_ <- lat_lon_transform(x = subset_, variable = "mean.long", factor = "Sub_Spec", 
-                             offset = .1 * c(.5,.5,-.5,.5,-.5,-.5))
+                             offset = .15 * c(.5,.5,-.5,.5,-.5,-.5))
 
 ggplot(data = subset_) +
   geom_point(data = subset_, aes(x = new.mean.long, y = new.mean.lat, color = Sub_Spec, size = n))
 
-  summarize(mean.lat = mean(Latitude), mean.long = mean(Longitude))
+Portugal.gg <- ggplot(data = Portugal.df) +
+  geom_path(aes(x=long, y=lat), color = "black") + 
+  xlim(-9.5,-6) + ylim(36.9, 42.2) +
+  coord_equal(ratio = 1) +
+  theme_classic() +
+  geom_point(data = subset_, aes(x = new.mean.long, y = new.mean.lat, 
+                                color = Sub_Spec, shape = Section, size = n)) +
+  scale_shape_manual(values = c(15:17)) +
+  scale_size(range = c(3,5))
 
-
-
-ggplot(data = subset.) +
-  geom_point(data = subset., aes(x = Longitude, y = Latitude, color = Sub_Spec))
-
+ggplot(data = subset_) +
+  geom_point(data = subset_, aes(x = new.mean.long, y = new.mean.lat, 
+                                 color = Sub_Spec, shape = Section, size = factor(n))) +
+  coord_equal(ratio = 1) +
+  scale_size_manual(values = c(rep(2,3),rep(3,3),rep(4,8)),breaks = c(3,5,7), labels = c("a","b","c"))
