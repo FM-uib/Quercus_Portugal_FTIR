@@ -40,7 +40,6 @@ subset. <- subset. %>%
   group_by(Group, Sub_Spec) %>%
   mutate(n = n_distinct(ID))
 
-
 lat_lon_transform <- function(x, variable, factor, offset){
   names(offset) <- levels(x[,factor])
   new <- as.vector(x[,variable] + sapply(x[,factor], function(x) offset[x]))
@@ -59,8 +58,7 @@ subset_ <- lat_lon_transform(x = subset_, variable = "new.mean.lat", factor = "G
 subset_ <- lat_lon_transform(x = subset_, variable = "new.mean.long", factor = "Group", 
                              offset = .05 * c(0,.5,0,0,0,0,0,0,-1.2,0,0,0,0,0,.5))
 
-ggplot(data = subset_) +
-  geom_point(data = subset_, aes(x = new.mean.long, y = new.mean.lat, color = Sub_Spec, size = n))
+# Map of Samples by location
 
 Portugal.gg <- ggplot(data = Portugal.df) +
   geom_path(aes(x=long, y=lat), color = "black") + 
@@ -77,9 +75,3 @@ ggsave("O:/PhD/Data/Portugal 2018/paper/Sample_map.png", plot = Portugal.gg, dev
        width = 15, height = 15, units = c("cm"), dpi = 600)
 ggsave("O:/PhD/Data/Portugal 2018/paper/Sample_map.svg", plot = Portugal.gg, device = "svg", 
        width = 15, height = 15, units = c("cm"), dpi = 600)
-
-ggplot(data = subset_) +
-  geom_point(data = subset_, aes(x = new.new.mean.long, y = new.new.mean.lat, 
-                                 color = Sub_Spec, shape = Section, size = factor(n))) +
-  coord_equal(ratio = 1) +
-  scale_size_manual(values = c(rep(2,3),rep(3,3),rep(4,8)),breaks = c(3,5,7), labels = c("a","b","c"))
