@@ -65,4 +65,8 @@ prec.map <- plot+stat_contour(data = ord.surf.pls.train.prec,
                               binwidth = 5, size = 1, linetype = "dashed", colour = "grey50")
 elev.map <- plot+stat_contour(data = ord.surf.pls.train.elev, 
                               aes(x = x, y = y, z = z),
-                              binwidth = 20, size = 1, linetype = "dashed", colour = "grey50")
+                              binwidth = 20, size = 1, linetype = "dashed", colour = "grey50")+
+  geom_dl(aes(x = x, y = y, z = z, label = ..level..), 
+          data = ord.surf.pls.train.elev, 
+          method = list("top.pieces", cex = .6, vjust = -.3), 
+          stat = "contour", inherit.aes = FALSE)
