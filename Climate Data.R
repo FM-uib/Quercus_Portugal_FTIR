@@ -48,6 +48,7 @@ colnames(Precip.monthly.01)<-col.names
 
 #gsub("\\.","e", "LINHÓ..21A.09G.") #String replacement
 
+###
 read_pt_data <- function(file){
   tmp <- readLines(file)
   data <- read.csv(text = tmp[-4], 
@@ -63,6 +64,27 @@ read_pt_data <- function(file){
 }
 prec.mon.01 <- read_pt_data("Climate Data/Precip_monthly_01.csv")
 
+ord.surf <- function(x, y){
+  ord.surf <- ordisurf(x = x, y = y, plot = FALSE)
+  grid <- ord.surf$grid
+  ordi <- expand.grid(x = grid$x, y = grid$y)
+  ordi$z <- as.vector(grid$z)
+  ordi <- data.frame(na.omit(ordi))
+  return(ordi)
+}
+
+x <- stations[colnames(prec.mon.01)[-1],3:4]
+y <- as.numeric(as.vector(prec.mon.01[1027,2:50]))
+o<-ord.surf(x[!is.na(y),],y[!is.na(y)])
+ggplot(data = o, aes(x,y)) +geom_raster(aes(fill = z))
+
+tmp<-cbind(x[!is.na(y),],y[!is.na(y)])
+
+files <- list.files("Climate Data/", pattern = "Precip_Monthly*")
+monthly <- lapply(files, function(x) read_pt_data(paste0("Climate Data/",x)))
+monthly <- do.call(cbind, monthly)
+
+###
 
 sapply(c(2:50),function(x) sum(is.na(Precip.monthly.01[920:1040,x]))) #count NAs in columns
 
