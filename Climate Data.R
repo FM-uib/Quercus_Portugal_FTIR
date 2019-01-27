@@ -48,7 +48,22 @@ colnames(Precip.monthly.01)<-col.names
 
 #gsub("\\.","e", "LINHÓ..21A.09G.") #String replacement
 
-sub("\\.","/",substring(string,regexpr("\\.\\.",string)+2,last = nchar(string)-1 )) #Convert colname into station-code
+read_pt_data <- function(file){
+  tmp <- readLines(file)
+  data <- read.csv(text = tmp[-4], 
+                                header = T,
+                                skip = 2,
+                                nrows = length(tmp)-9)
+  data <- data[,-c(seq.int(3,99,2),100)]
+  
+  col.names<-colnames(data)
+  col.names[2:50] <- sapply(col.names[2:50], function(string) sub("\\.","/",substring(string,regexpr("\\.\\.",string)+2,last = nchar(string)-1 ))) #Convert colname into station-code
+  colnames(data) <- col.names
+  return(data)
+}
+prec.mon.01 <- read_pt_data("Climate Data/Precip_monthly_01.csv")
+
+
 sapply(c(2:50),function(x) sum(is.na(Precip.monthly.01[920:1040,x]))) #count NAs in columns
 
 not.full.na<-which(!sapply(c(1:50),function(x) sum(is.na(Precip.monthly.01[920:1040,x]))) == 121, arr.ind = T) #All stations with data from the last 10 years No full NA columns
@@ -108,7 +123,6 @@ print(Portugal.gg)
 # Rain data from paper
 setwd("./Climate Data/pt02_ascii/mensal")
 library(stringr)
-library(plyr)
 library(ggplot2)
 
 files <- list.files(pattern = "*PT_mensal*")
