@@ -2,20 +2,26 @@ library(ggplot2)
 library(rgdal)
 library(maptools)
 library(dplyr)
+library(here)
 
-setwd("O:/PhD/Data/Portugal 2018/paper")
+#setwd("O:/PhD/Data/Portugal 2018/paper")
 
-load(file = "data.rda")
+kml_to_df <- function(file){
+  require(rgdal)
+  require(ggplot2)
+  ogr.file <- readOGR(file)
+  ogr.file@data$id <- rownames(ogr.file@data)
+  polygon <- fortify(ogr.file, region = "id")
+  df <- merge(polygon, ogr.file@data, by = "id")
+  return(df)
+}
+
+load(file = here("Data", "Input", "data.rda"))
 
 # Portugal Map
-setwd("O:/PhD/Data/Portugal 2018")
 
-Portugal <- readOGR("countries/Iberian_Penin.shp")
-Portugal@data$id<-rownames(Portugal@data)
 
-Portugal.poly<-fortify(Portugal, region = "id", sort = F)
-
-Portugal.df<-merge(Portugal.poly, Portugal@data, by="id")
+Portugal.df <- kml_to_df(here("Data", "Input", "Iberian_Penin.shp"))
 
 Portugal.gg <- ggplot(data = Portugal.df) +
   geom_path(aes(x=long, y=lat), color = "black") + 
@@ -75,3 +81,109 @@ ggsave("O:/PhD/Data/Portugal 2018/paper/Sample_map.png", plot = Portugal.gg, dev
        width = 15, height = 15, units = c("cm"), dpi = 600)
 ggsave("O:/PhD/Data/Portugal 2018/paper/Sample_map.svg", plot = Portugal.gg, device = "svg", 
        width = 15, height = 15, units = c("cm"), dpi = 600)
+
+library(RStoolbox)
+
+elev <- readRDS(here("Data", "Output", "elevation_raster.rds"))
+
+elevation.gg <- ggR(elev, geom_raster = TRUE) + 
+  scale_fill_gradientn(colours = terrain.colors(100), name = "elevation", na.value = "white") +
+  geom_path(data = Portugal.df, aes(long, lat), color = "black") +
+  xlim(-9.5,-6) + ylim(36.8, 42.2)
+
+ggsave(here("R", "figures", "elevation.png"), plot = elevation.gg, device = "png", 
+            width = 15, height = 15, units = c("cm"), dpi = 600)
+
+mean_anual_temp <- readRDS(here("Data", "Output", "mean_anual_temp_raster.rds"))
+
+mean_anual_temp.gg <- ggR(mean_anual_temp, geom_raster = TRUE) + 
+  scale_fill_gradientn(colours = c("blue", "green", "yellow", "red"), name = "temperature", na.value = "white") +
+  geom_path(data = Portugal.df, aes(long, lat), color = "black") +
+  xlim(-9.5,-6) + ylim(36.8, 42.2)
+
+april_temp <- readRDS(here("Data", "Output", "april_temp_raster.rds"))
+
+april_temp.gg <- ggR(april_temp, geom_raster = TRUE) + 
+  scale_fill_gradientn(colours = c("blue", "green", "yellow", "red"), name = "temperature", na.value = "white") +
+  geom_path(data = Portugal.df, aes(long, lat), color = "black") +
+  xlim(-9.5,-6) + ylim(36.8, 42.2)
+
+ggsave(here("R", "figures", "mean_anual_temp.png"), plot = mean_anual_temp.gg, device = "png", 
+            width = 15, height = 15, units = c("cm"), dpi = 600)
+
+ggsave(here("R", "figures", "april_temp.png"), plot = april_temp.gg, device = "png", 
+       width = 15, height = 15, units = c("cm"), dpi = 600)
+
+# precip WC
+mean_anual_prec <- readRDS(here("Data", "Output", "mean_anual_prec_raster.rds"))
+
+mean_anual_prec.gg <- ggR(mean_anual_prec, geom_raster = TRUE) + 
+  scale_fill_gradientn(colours = c("#CCE5FF","#66B2FF","#000099"), name = "precipitation", na.value = "white") +
+  geom_path(data = Portugal.df, aes(long, lat), color = "black") +
+  xlim(-9.5,-6) + ylim(36.8, 42.2)
+
+april_prec <- readRDS(here("Data", "Output", "april_prec_raster.rds"))
+
+april_prec.gg <- ggR(april_prec, geom_raster = TRUE) + 
+  scale_fill_gradientn(colours = c("#CCE5FF","#66B2FF","#000099"), name = "precipitation", na.value = "white") +
+  geom_path(data = Portugal.df, aes(long, lat), color = "black") +
+  xlim(-9.5,-6) + ylim(36.8, 42.2)
+
+ggsave(here("R", "figures", "mean_anual_prec.png"), plot = mean_anual_prec.gg, device = "png", 
+       width = 15, height = 15, units = c("cm"), dpi = 600)
+
+ggsave(here("R", "figures", "april_prec.png"), plot = april_prec.gg, device = "png", 
+       width = 15, height = 15, units = c("cm"), dpi = 600)
+
+# srad WC
+mean_anual_srad <- readRDS(here("Data", "Output", "mean_anual_srad_raster.rds"))
+
+mean_anual_srad.gg <- ggR(mean_anual_srad, geom_raster = TRUE) + 
+  scale_fill_gradientn(colours = c("yellow","purple"), name = "solar radiation", na.value = "white") +
+  geom_path(data = Portugal.df, aes(long, lat), color = "black") +
+  xlim(-9.5,-6) + ylim(36.8, 42.2)
+
+april_srad <- readRDS(here("Data", "Output", "april_srad_raster.rds"))
+
+april_srad.gg <- ggR(april_srad, geom_raster = TRUE) + 
+  scale_fill_gradientn(colours = c("yellow","purple"), name = "april solar radiation", na.value = "white") +
+  geom_path(data = Portugal.df, aes(long, lat), color = "black") +
+  xlim(-9.5,-6) + ylim(36.8, 42.2)
+
+ggsave(here("R", "figures", "mean_anual_srad.png"), plot = mean_anual_srad.gg, device = "png", 
+       width = 15, height = 15, units = c("cm"), dpi = 600)
+
+ggsave(here("R", "figures", "april_srad.png"), plot = april_srad.gg, device = "png", 
+       width = 15, height = 15, units = c("cm"), dpi = 600)
+
+##Precip map Portugal paper
+
+prec.df <- readRDS(here("Data", "Output", "prec_data_df.rds"))
+
+mean_yearly<-ddply(prec.df, .(ID),summarise,
+                   mean_precip = mean(precipitation),
+                   latitude = mean(latitude),
+                   longitude = mean(longitude))
+mean_yearly <- prec.df %>%
+  filter(Year >= 1970) %>%
+  group_by(ID) %>%
+  mutate(mean_precip = mean(precipitation))
+
+mean_yearly_prec.gg <- ggplot(mean_yearly, aes(longitude, latitude)) +
+  geom_raster(aes(fill = mean_precip),interpolate = F) +
+  scale_fill_gradientn(colours = c("#CCE5FF","#66B2FF","#000099")) +
+  geom_path(data = Portugal.df, aes(long, lat), color = "black") +
+  xlim(-9.5,-6) + ylim(36.8, 42.2) +
+  coord_equal(ratio = 1)
+
+mean_april <- prec.df %>%
+  filter(Year >= 1970, Month == "April") %>%
+  group_by(ID) %>%
+  mutate(mean_precip = mean(precipitation))
+
+mean_april_prec.gg <- ggplot(mean_april, aes(longitude, latitude)) +
+  geom_raster(aes(fill = mean_precip),interpolate = F) +
+  scale_fill_gradientn(colours = c("#CCE5FF","#66B2FF","#000099")) +
+  geom_path(data = Portugal.df, aes(long, lat), color = "black") +
+  xlim(-9.5,-6) + ylim(36.8, 42.2) +
+  coord_equal(ratio = 1)

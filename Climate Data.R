@@ -46,46 +46,9 @@ colnames(Precip.monthly.01)<-col.names
 #drop<-c(grep("X", colnames(Precip.monthly.01)),100)
 
 
-#gsub("\\.","e", "LINHÓ..21A.09G.") #String replacement
+#gsub("\\.","e", "LINH?..21A.09G.") #String replacement
 
-###
-read_pt_data <- function(file){
-  tmp <- readLines(file)
-  data <- read.csv(text = tmp[-4], 
-                                header = T,
-                                skip = 2,
-                                nrows = length(tmp)-9)
-  data <- data[,-c(seq.int(3,99,2),100)]
-  
-  col.names<-colnames(data)
-  col.names[2:50] <- sapply(col.names[2:50], function(string) sub("\\.","/",substring(string,regexpr("\\.\\.",string)+2,last = nchar(string)-1 ))) #Convert colname into station-code
-  colnames(data) <- col.names
-  return(data)
-}
-prec.mon.01 <- read_pt_data("Climate Data/Precip_monthly_01.csv")
-
-ord.surf <- function(x, y){
-  ord.surf <- ordisurf(x = x, y = y, plot = FALSE)
-  grid <- ord.surf$grid
-  ordi <- expand.grid(x = grid$x, y = grid$y)
-  ordi$z <- as.vector(grid$z)
-  ordi <- data.frame(na.omit(ordi))
-  return(ordi)
-}
-
-x <- stations[colnames(prec.mon.01)[-1],3:4]
-y <- as.numeric(as.vector(prec.mon.01[1027,2:50]))
-o<-ord.surf(x[!is.na(y),],y[!is.na(y)])
-ggplot(data = o, aes(x,y)) +geom_raster(aes(fill = z))
-
-tmp<-cbind(x[!is.na(y),],y[!is.na(y)])
-
-files <- list.files("Climate Data/", pattern = "Precip_Monthly*")
-monthly <- lapply(files, function(x) read_pt_data(paste0("Climate Data/",x)))
-monthly <- do.call(cbind, monthly)
-
-###
-
+sub("\\.","/",substring(string,regexpr("\\.\\.",string)+2,last = nchar(string)-1 )) #Convert colname into station-code
 sapply(c(2:50),function(x) sum(is.na(Precip.monthly.01[920:1040,x]))) #count NAs in columns
 
 not.full.na<-which(!sapply(c(1:50),function(x) sum(is.na(Precip.monthly.01[920:1040,x]))) == 121, arr.ind = T) #All stations with data from the last 10 years No full NA columns
@@ -145,9 +108,10 @@ print(Portugal.gg)
 # Rain data from paper
 setwd("./Climate Data/pt02_ascii/mensal")
 library(stringr)
+library(dplyr)
 library(ggplot2)
 
-files <- list.files(pattern = "*PT_mensal*")
+files <- list.files(path = here("Data", "Input", "pt02_ascii","mensal"),pattern = "*PT_mensal*")
 month<-c("January","February","March","April","Mai","June","Juli","August","September","October","November","December")
 
 read.files<-function(file, month){
@@ -161,16 +125,18 @@ read.files<-function(file, month){
   colnames(tmp)<-c("Year", "Month", "latitude", "longitude", "precipitation")
   return(tmp)
 }
-l<-lapply(c(1:12),function(x) read.files(files[x],month[x]))
+l<-lapply(c(1:12),function(x) read.files(paste0(here("Data", "Input", "pt02_ascii","mensal"),"/",files[x]),month[x]))
 
 data.df<-do.call(rbind,l)
 
 data.df$ID<-paste(as.character(data.df$latitude),as.character(data.df$longitude),sep = "_")
 data.df$ID<-factor(data.df$ID)
-data.df$Year<-factor(data.df$Year)
+#data.df$Year<-factor(data.df$Year)
 data.df$Month<-factor(data.df$Month)
 
 levels(data.df$ID) <- sapply(c(1:257),function(x) paste("St",formatC(x, width=3, flag="0"),sep="_"))
+
+saveRDS(data.df , here("Data", "Output", "prec_data_df.rds"))
 
 mean_yearly<-ddply(data.df, .(ID),summarise,
       mean_precip = mean(precipitation),
@@ -216,21 +182,23 @@ Ps1 = SpatialPolygons(list(Polygons(list(P1), ID = "a")),
                       proj4string=CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs"))
 
 #Port <- getData("GADM", country="Portugal", level = 0)
-setwd("O:/PhD/Data/WorldClim")
-fn <- "wc2.0_30s_tavg_04.tif"
-fn <- "wc2.0_30s_tavg_05.tif"
-r2<-raster(fn)
-rr<-mask(r1,Ps1)
+#setwd("O:/PhD/Data/WorldClim")
+#fn <- "wc2.0_30s_tavg_04.tif"
+#fn <- "wc2.0_30s_tavg_05.tif"
+#r2<-raster(fn)
+#rr<-mask(r1,Ps1)
 
-files<-list.files()
-files[grepl(".tif", files)]
+files <- files[grepl(".tif", list.files("O:/PhD/Data/WorldClim/tavg"))]
 
-l<-lapply(files[grepl(".tif", files)], function(x){
+tmp<-lapply(paste0("O:/PhD/Data/WorldClim/tavg/", files), function(x){
   r<-raster(x)
   r<-crop(r, Ps1)
   return(r)
 })
-mean_anual_temp<-overlay(l[[1]],l[[2]],l[[3]],l[[4]],l[[5]],l[[6]],l[[7]],l[[8]],l[[9]],l[[10]],l[[11]],l[[12]],fun=mean)
+mean_anual_temp<-overlay(tmp[[1]],tmp[[2]],tmp[[3]],tmp[[4]],tmp[[5]],tmp[[6]],tmp[[7]],tmp[[8]],tmp[[9]],tmp[[10]],tmp[[11]],tmp[[12]],fun=mean)
+
+saveRDS(mean_anual_temp, file = here("Data", "Output", "mean_anual_temp_raster.rds"))
+saveRDS(tmp[[4]], file = here("Data", "Output", "april_temp_raster.rds"))
 
 data <- data.frame(coordinates(samples.df),
                    samples.df$SID, 
@@ -238,6 +206,46 @@ data <- data.frame(coordinates(samples.df),
 s<-is.na(data$extract.mean_anual_temp..samples.df.)
 data[s,4]<-15.625
 
+# Precip WorldClim
+
+files <- list.files("O:/PhD/Data/WorldClim/prec")
+files <- files[grepl(".tif", list.files("O:/PhD/Data/WorldClim/prec"))]
+
+tmp<-lapply(paste0("O:/PhD/Data/WorldClim/prec/", files), function(x){
+  r<-raster(x)
+  r<-crop(r, Ps1)
+  return(r)
+})
+mean_anual_prec<-overlay(tmp[[1]],tmp[[2]],tmp[[3]],tmp[[4]],tmp[[5]],tmp[[6]],tmp[[7]],tmp[[8]],tmp[[9]],tmp[[10]],tmp[[11]],tmp[[12]],fun=mean)
+
+saveRDS(mean_anual_prec, file = here("Data", "Output", "mean_anual_prec_raster.rds"))
+saveRDS(tmp[[4]], file = here("Data", "Output", "april_prec_raster.rds"))
+
+# solar radiation WorldClim
+
+files <- list.files("O:/PhD/Data/WorldClim/srad")
+files <- files[grepl(".tif", list.files("O:/PhD/Data/WorldClim/srad"))]
+
+tmp<-lapply(paste0("O:/PhD/Data/WorldClim/srad/", files), function(x){
+  r<-raster(x)
+  r<-crop(r, Ps1)
+  return(r)
+})
+mean_anual_srad<-overlay(tmp[[1]],tmp[[2]],tmp[[3]],tmp[[4]],tmp[[5]],tmp[[6]],tmp[[7]],tmp[[8]],tmp[[9]],tmp[[10]],tmp[[11]],tmp[[12]],fun=mean)
+
+saveRDS(mean_anual_srad, file = here("Data", "Output", "mean_anual_srad_raster.rds"))
+saveRDS(tmp[[4]], file = here("Data", "Output", "april_srad_raster.rds"))
+
+load(here("Data","Input","data.rda"))
+samples.df <- subset
+coordinates(samples.df)<-~Longitude+Latitude
+crs(samples.df)<-CRS("+init=EPSG:4326")
+subset$april_prec_WC <- extract(april_prec, samples.df)
+subset$mean_y_prec_WC <- extract(mean_anual_prec, samples.df)
+subset$april_temp_WC <- extract(april_temp, samples.df)
+subset$april_srad_WC <- extract(april_srad, samples.df)
+subset$mean_y_srad_WC <- extract(mean_anual_srad, samples.df)
+save(subset, train, test, file = here("Data", "Input", "data_WC.rda"))
 
 #Elevation data
 t<-getData("alt",country="PRT",mask=FALSE)

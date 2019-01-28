@@ -62,6 +62,7 @@ search_str <- c("<td>COMP_LIT</td>", "<td>PER_GEOL</td>", "<td>DESIGNA</td>")
 Lito.df$COMP_LIT <- as.factor(unlist(lapply(Lito.df$Description, 
                                                    function(x) between(search_str[1],x))))
 
+
 Lito.gg <- ggplot(data = Lito.df, aes(x=long, y=lat, group = group,fill = Name)) +
   geom_polygon()  +
   scale_fill_hue(l = 40) +
