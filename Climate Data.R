@@ -22,33 +22,18 @@ colnames(Precip.anual.01)
 #drop<-c(grep("X", colnames(Precip.anual.01)),100)
 Precip.anual.01 <- Precip.anual.01[,-c(seq.int(3,99,2),100)]
 
-tmp <- readLines("Climate Data/Precip_monthly_01.csv")
-Precip.monthly.01 <- read.csv(text = tmp[-4], 
+tmp <- readLines("Climate Data/Precip_monthly_06.csv")
+Precip.monthly.06 <- read.csv(text = tmp[-4], 
                             header = T,
                             skip = 2,
                             nrows = length(tmp)-9)
-Precip.monthly.01 <- Precip.monthly.01[,-c(seq.int(3,99,2),100)]
+Precip.monthly.06 <- Precip.monthly.06[,-c(seq.int(3,99,2),100)]
 
 col.names<-colnames(Precip.monthly.01)
-#Reverse
-col.names[2:50] <- sapply(col.names[2:50], function(x) paste(rev(substring(x,1:nchar(x),1:nchar(x))),collapse="") )
 
-#Split into station code only
-col.names[2:50] <- sapply(col.names[2:50],function(x) sub("\\.","/",substring(x,last = regexpr("\\.\\.",x)-1,first = 2 )))
+col.names <- sapply(col.names[2:50], function(string) sub("\\.","/",substring(string,regexpr("\\.\\.",string)+2,last = nchar(string)-1 ))) #Convert colname into station-code
+colnames(Precip.monthly.01)[2:50] <- col.names
 
-#Reverse
-col.names[2:50] <- sapply(col.names[2:50], function(x) paste(rev(substring(x,1:nchar(x),1:nchar(x))),collapse="") )
-
-#col.names<-colnames(Precip.monthly.01)
-#col.names[2:50]<-sapply(col.names[2:50], function(x) sub("\\.","/",substring(x,regexpr("\\.\\.",x)+2,last = nchar(x)-1 )))
-colnames(Precip.monthly.01)<-col.names
-
-#drop<-c(grep("X", colnames(Precip.monthly.01)),100)
-
-
-#gsub("\\.","e", "LINH?..21A.09G.") #String replacement
-
-sub("\\.","/",substring(string,regexpr("\\.\\.",string)+2,last = nchar(string)-1 )) #Convert colname into station-code
 sapply(c(2:50),function(x) sum(is.na(Precip.monthly.01[920:1040,x]))) #count NAs in columns
 
 not.full.na<-which(!sapply(c(1:50),function(x) sum(is.na(Precip.monthly.01[920:1040,x]))) == 121, arr.ind = T) #All stations with data from the last 10 years No full NA columns
@@ -245,6 +230,12 @@ subset$mean_y_prec_WC <- extract(mean_anual_prec, samples.df)
 subset$april_temp_WC <- extract(april_temp, samples.df)
 subset$april_srad_WC <- extract(april_srad, samples.df)
 subset$mean_y_srad_WC <- extract(mean_anual_srad, samples.df)
+
+subset[is.na(subset$april_prec_WC),"april_prec_WC"]<-61
+subset[is.na(subset$mean_y_prec_WC),"mean_y_prec_WC"]<-58.166
+subset[is.na(subset$april_temp_WC),"april_temp_WC"]<-14.4
+subset[is.na(subset$mean_y_srad_WC),"mean_y_srad_WC"]<-16603.50
+
 save(subset, train, test, file = here("Data", "Input", "data_WC.rda"))
 
 #Elevation data
