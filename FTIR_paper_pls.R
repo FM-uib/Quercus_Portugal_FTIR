@@ -1,9 +1,10 @@
 library(pls)
 library(ggplot2)
 library(MASS)
+library(here)
 setwd("O:/PhD/Data/Portugal 2018/paper")
 
-load(file = "data.rda")
+load(file = here("Data","Input","data_WC.rda"))
 S.regions <- c(145:154,191:200,371:380,546:555)
 subset$SG2.S.R <- I(subset$FTIR.SG2[,S.regions])
 
@@ -12,7 +13,7 @@ npc = 30
 pls.train <- cppls(Species.HO ~ FTIR.SG2, npc, data = subset, subset = train, scale=T)
 pls.test <- predict(pls.train, newdata = subset[!subset$train,], type = "score")
 
-pls.train.yadd <- cppls(Species.HO ~ FTIR.SG2 + env ,npc, data = subset, subset = train, scale=T)
+pls.train.yadd <- cppls(Species.HO ~ FTIR.SG2 + env_april_WS ,npc, data = subset, subset = train, scale=T)
 pls.test.yadd <- predict(pls.train.yadd, newdata = subset[!subset$train,], type = "score")
 
 plsr.train <- plsr(Species.HO ~ FTIR.SG2 , npc, data = subset, subset = train, scale=T)
@@ -35,9 +36,9 @@ mean((subset$mean_temp[!subset$train]-pls.env.test[,1,5])^2)
 
 # Only suber for env modelling
 suber <- subset(subset, Sub_Spec == "suber")
-pls.env <- cppls(env ~ FTIR.SG2, npc, data = suber, subset = train, scale =T)
+pls.env <- cppls(env_april_WC ~ FTIR.SG2, npc, data = suber, subset = train, scale =T)
 pls.env.test <- predict(pls.env, newdata = suber[!suber$train,], type = "response")
-plot(pls.env.test[,1,5], suber$mean_temp[!suber$train], asp = 1)
+plot(pls.env.test[,1,5], suber$env_april_WS[!suber$train,1], asp = 1)
 
 robur <- subset(subset, Sub_Spec == "robur")
 pls.env <- cppls(env ~ FTIR.SG2, npc, data = robur, subset = train, scale =T)

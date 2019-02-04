@@ -1,8 +1,8 @@
 setwd("O:/PhD/Data/port climate")
-files <- list.files("prec/")
+load("Stations.rda")
 
 read_pt_weather_data <- function(files){
-  tmp <- readLines(paste0("prec/", files))
+  tmp <- readLines(files)
   df <- read.csv(text = tmp[-4], 
                  header = T,
                  skip = 2,
@@ -13,31 +13,74 @@ read_pt_weather_data <- function(files){
   colnames(df) <- tmp
   return(df)
 }
+calc_weather <- function(data, stations) {
+  require(dplyr)
+  tmp1 <- data[,-1] %>%
+    summarise_all(., sum)
+  tmp2 <- data.frame(ID = colnames(data)[-1],
+                        sum = t(tmp1),
+                        mean_d = t(tmp1)/nrow(data),
+                        mean_m = t(tmp1)/(nrow(data)/31),
+                        lat = stations[colnames(data)[-1], "Latitude"],
+                        lon = stations[colnames(data)[-1], "Longitude"])
+  return(tmp2)
+}
+nearest_neighbor <- function(data, stations, value){
+  require(raster)
+  require(Rfast)
+  coordinates(stations) <- ~lon+lat
+  crs(stations) <- CRS("+init=EPSG:4326")
+  coordinates(data)<-~Longitude+Latitude
+  crs(data)<-CRS("+init=EPSG:4326")
+  pD <- pointDistance(data, stations, lonlat = TRUE)
+  ind <- rowMins(pD)
+  results <- sapply(ind, function(x) stations@data[x,value])
+  return(results)
+}
+NA2mean <- function(x) replace(x, is.na(x), mean(x, na.rm = TRUE))
 
-prec1 <- read_pt_weather_data(files[1])
-prec2 <- read_pt_weather_data(files[1])
+# Precipitation
+prec1 <- read_pt_weather_data(list.files("prec/", full.names = T)[1])
+prec2 <- read_pt_weather_data(list.files("prec/", full.names = T)[2])
 prec <- cbind(prec2,prec1[,-1])
 
-prec <- prec[29:89,] # only march and april
+# Solar Radiation
+srad <- read_pt_weather_data(list.files("srad/", full.names = T))
 
-hist(sapply(c(2:92),function(x) sum(is.na(prec[,x]))), breaks = c(-1:70)) # plot no of NAs
+# Mean daily Temp
+temp <- read_pt_weather_data(list.files("temp/", full.names = T))
 
-prec <- prec[,-(which(sapply(c(1:92),function(x) sum(is.na(prec[,x]))) > 5, arr.ind = T))]
+# only select march and april of the data
+prec <- prec[29:89,] 
+srad <- srad[29:89,]
+temp <- temp[29:89,]
+
+hist(sapply(c(2:ncol(prec)),function(x) sum(is.na(prec[,x]))), breaks = c(-1:70)) # plot no. of NAs
+
+# Selecting the stations with 5 or less missing days of data. 
+prec <- prec[,-(which(sapply(c(1:ncol(prec)),function(x) sum(is.na(prec[,x]))) > 5, arr.ind = T))]
+srad <- srad[,-(which(sapply(c(1:ncol(srad)),function(x) sum(is.na(srad[,x]))) > 5, arr.ind = T))]
+temp <- temp[,-(which(sapply(c(1:ncol(temp)),function(x) sum(is.na(temp[,x]))) > 5, arr.ind = T))]
 
 prec[is.na(prec)] <- 0
+srad[,-1] <- as.data.frame(sapply(srad[,-1], NA2mean))
+temp[,-1] <- as.data.frame(sapply(temp[,-1], NA2mean))
 
-sum_prec <- prec[,-1] %>%
-  summarise_all(., sum)
+prec_calc <- calc_weather(prec, stations)
+srad_calc <- calc_weather(srad, stations)
+temp_calc <- calc_weather(temp, stations)
 
-tsum <- as.data.frame(t(sum_prec))
-tsum$ID <- row.names(tsum)
-tsum$m_prec <- tsum$V1/61
+# nearest neighbor
+subset$prec_mean_d_WS <- nearest_neighbor(subset, prec_calc, "mean_d")
+subset$srad_mean_d_WS <- nearest_neighbor(subset, srad_calc, "mean_d")
+subset$temp_mean_d_WS <- nearest_neighbor(subset, temp_calc, "mean_d")
 
-load("Stations.rda")
+e_data <- data.frame(ID = subset$ID,
+                     prec_mean_d_MA_WS = nearest_neighbor(subset, prec_calc, "mean_d"),
+                     srad_mean_d_MA_WS = nearest_neighbor(subset, srad_calc, "mean_d"),
+                     temp_mean_d_MA_WS = nearest_neighbor(subset, temp_calc, "mean_d"))
 
-tsum$lat <- stations[tsum$ID,"Latitude"]
-tsum$lon <- stations[tsum$ID,"Longitude"]
-
+# interpolation
 library(akima)
 
 prec_r <- interp(tsum$lon, tsum$lat, tsum$m_prec, linear = T, nx = 100, ny = 200)
@@ -67,15 +110,6 @@ ggplot(prec_grid, aes(lon, lat)) +
   geom_point(data = tsum, aes(lon, lat)) +
   geom_point(data = subset[is.na(subset$april_prec_WS),], aes(Longitude, Latitude, color = "red"))
 
-# mnearest neighbor
-
-coordinates(tsum)<-~lon+lat
-crs(tsum)<-CRS("+init=EPSG:4326")
-pD_trees<-pointDistance(samples.df, tsum, lonlat = TRUE)
-library(Rfast)
-ind <- rowMins(pD_trees)
-
-subset$april_prec_WS <- sapply(ind, function(x) tsum$m_prec[x])
 
 applied <- function(ind){
   subset$april_prec_WS <- sapply(ind, function(x) tsum$m_prec[x])
