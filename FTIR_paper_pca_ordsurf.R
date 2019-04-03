@@ -26,6 +26,7 @@ ldgs.data <- function(pca){
   rownames(ldngs) <- round(as.numeric(rownames(ldngs)))
   ldngs.peaks <- ldngs[c("1605", "1516", "1171", "833", "1745","1462","721","1107", "1055", "1028","1076", "995", "1651","1551"),-615]
   ldngs.peaks$Comp<-c(rep("S",4), rep("L", 3), rep("C",5), rep("P",2))
+  colnames(ldngs.peaks)[1:10] <- c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10")
   ldngs.df <- melt(ldngs, id = "wavenumber")
   colnames(ldngs.df)<-c("Wavenumber", "PC", "SG2")
   return(list(ldngs.df,ldngs.peaks))
