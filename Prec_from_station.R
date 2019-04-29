@@ -1,5 +1,6 @@
-setwd("O:/PhD/Data/port climate")
-load("Stations.rda")
+library(here)
+
+load(here("Data", "Input", "climate_data", "Stations.rda"))
 
 read_pt_weather_data <- function(files){
   tmp <- readLines(files)
@@ -18,14 +19,14 @@ calc_weather <- function(data, stations) {
   tmp1 <- data[,-1] %>%
     summarise_all(., sum)
   tmp2 <- data.frame(ID = colnames(data)[-1],
-                        sum = t(tmp1),
-                        mean_d = t(tmp1)/nrow(data),
-                        mean_m = t(tmp1)/(nrow(data)/31),
-                        lat = stations[colnames(data)[-1], "Latitude"],
-                        lon = stations[colnames(data)[-1], "Longitude"])
+                     sum = t(tmp1),
+                     mean_d = t(tmp1)/nrow(data),
+                     mean_m = t(tmp1)/(nrow(data)/31),
+                     lat = stations[colnames(data)[-1], "Latitude"],
+                     lon = stations[colnames(data)[-1], "Longitude"])
   return(tmp2)
 }
-nearest_neighbor <- function(data, stations, value){
+nearest_neighbor <- function(data, stations, value, distances = FALSE){
   require(raster)
   require(Rfast)
   coordinates(stations) <- ~lon+lat
@@ -34,21 +35,31 @@ nearest_neighbor <- function(data, stations, value){
   crs(data)<-CRS("+init=EPSG:4326")
   pD <- pointDistance(data, stations, lonlat = TRUE)
   ind <- rowMins(pD)
-  results <- sapply(ind, function(x) stations@data[x,value])
-  return(results)
+  if(distances){
+    dists <- sapply(c(1:nrow(data)), function(x) pD[x,ind[x]])
+    return(dists)
+  }else{
+    results <- sapply(ind, function(x) stations@data[x,value])
+    return(results)    
+  }
 }
 NA2mean <- function(x) replace(x, is.na(x), mean(x, na.rm = TRUE))
 
+select
+
+data = readRDS(file = here("Data", "Input", "data_meaned.rds"))
+
 # Precipitation
-prec1 <- read_pt_weather_data(list.files("prec/", full.names = T)[1])
-prec2 <- read_pt_weather_data(list.files("prec/", full.names = T)[2])
+prec1 <- read_pt_weather_data(list.files(here("Data","Input","climate_data","prec"), full.names = T)[1])
+prec2 <- read_pt_weather_data(list.files(here("Data","Input","climate_data","prec"), full.names = T)[2])
 prec <- cbind(prec2,prec1[,-1])
+prec$DATA <- as.Date(as.character(prec$DATA), format = "%d/%m/%Y")
 
 # Solar Radiation
-srad <- read_pt_weather_data(list.files("srad/", full.names = T))
+srad <- read_pt_weather_data(list.files(here("Data","Input","climate_data","srad"), full.names = T))
 
 # Mean daily Temp
-temp <- read_pt_weather_data(list.files("temp/", full.names = T))
+temp <- read_pt_weather_data(list.files(here("Data","Input","climate_data","temp"), full.names = T))
 
 # only select march and april of the data
 prec <- prec[29:89,] 
@@ -74,6 +85,15 @@ temp_calc <- calc_weather(temp, stations)
 subset$prec_mean_d_WS <- nearest_neighbor(subset, prec_calc, "mean_d")
 subset$srad_mean_d_WS <- nearest_neighbor(subset, srad_calc, "mean_d")
 subset$temp_mean_d_WS <- nearest_neighbor(subset, temp_calc, "mean_d")
+
+prec_dist <- nearest_neighbor(data, prec_calc, "mean_d", distances = T)
+srad_dist <- nearest_neighbor(data, srad_calc, "mean_d", distances = T)
+temp_dist <- nearest_neighbor(data, temp_calc, "mean_d", distances = T)
+dist <- data.frame(prec = prec_dist, srad = srad_dist, temp = temp_dist)
+dplyr::summarise_all(dist, funs(min,max, n))
+
+#   prec_min srad_min temp_min prec_max srad_max temp_max
+# 1 973.8502 6468.584 6468.584 43223.24 76356.09 76356.09  
 
 e_data <- data.frame(ID = subset$ID,
                      prec_mean_d_MA_WS = nearest_neighbor(subset, prec_calc, "mean_d"),
