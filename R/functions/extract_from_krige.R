@@ -7,12 +7,15 @@ extract_from_krige <- function(data, kriged, length = 14, sum = T){
     # extract date series out of dataframe
     tmp <- subset(melted, date < data$Date[x] & date > data$Date[x] - length)
     # extract by location
-    tmp <- tmp[tmp[,2] %in% round(data[x,"Latitude"],1) & tmp[,1] %in% round(data[x, "Longitude"],1),4]
+    tmp2 <- tmp[tmp[,2] %in% round(data[x,"Latitude"],1) & tmp[,1] %in% round(data[x, "Longitude"],1),4]
+    if(length(tmp2) == 0){
+      tmp2 <- tmp[as.numeric(as.character(tmp[,2])) %in% round(data[x,"Latitude"],1) & tmp[,1] %in% round(data[x, "Longitude"],1),4]
+    }
     # aggregate env stat
     if(sum){
-      sum(tmp)
+      sum(tmp2)
     }else{
-      mean(tmp)
+      mean(tmp2)
     }
   })
 }

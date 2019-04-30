@@ -9,6 +9,7 @@ data$Date[is.na(data$Date)] <- mean(subset(data, Sub_Spec == "rotundifolia")[,"D
 source(here("R","functions","read_pt_weather_data.R"))
 source(here("R","functions","krige_env.R"))
 source(here("R","functions","extract_from_krige.R"))
+source(here("R","functions","lapsed_temp.R"))
 NA2mean <- function(x) replace(x, is.na(x), mean(x, na.rm = TRUE))
 
 # Load Precipitation Data
@@ -30,9 +31,9 @@ srad$DATA <- as.Date(as.character(srad$DATA), format = "%d/%m/%Y")
 srad$Date_num <- as.numeric(srad$DATA)
 
 # sub select date range
-prec <- subset(prec, DATA > min(data$Date)-21 & DATA < max(data$Date))
-temp <- subset(temp, DATA > min(data$Date)-21 & DATA < max(data$Date))
-srad <- subset(srad, DATA > min(data$Date)-21 & DATA < max(data$Date))
+prec <- subset(prec, DATA > min(data$Date)-21 & DATA <= max(data$Date))
+temp <- subset(temp, DATA > min(data$Date)-21 & DATA <= max(data$Date))
+srad <- subset(srad, DATA > min(data$Date)-21 & DATA <= max(data$Date))
 
 # delete stations with more than 5 missing dates of data
 prec <- prec[,-(which(sapply(c(1:ncol(prec)),function(x) sum(is.na(prec[,x]))) > 5, arr.ind = T))]
@@ -43,6 +44,10 @@ temp <- temp[,-(which(sapply(c(1:ncol(temp)),function(x) sum(is.na(temp[,x]))) >
 prec[is.na(prec)] <- 0
 srad[,-1] <- as.data.frame(sapply(srad[,-1], NA2mean))
 temp[,-1] <- as.data.frame(sapply(temp[,-1], NA2mean))
+
+# calculate temp on 0 masl using adiabatic lapse rate
+temp <- sapply(grep(pattern = "*//*",colnames(temp), value = T), 
+                     function(x) lapsed_temp(as.numeric(stations[x, 2])/1000, 0, temp[,x]))
 
 # Kriging (.1 = 10 km)
 prec_krig <- krige_env(prec, stations)
@@ -55,7 +60,8 @@ saveRDS(srad_krig, here("Data","Output","srad_krig_10km.rds"))
 
 env <- data.frame(ID = data$ID,
                   prec = extract_from_krige(data, prec_krig),
-                  temp = extract_from_krige(data, temp_krig, sum = F),
+                  temp = lapsed_temp(old_alt = 0, new_alt = data$elevation,
+                                     extract_from_krige(data, temp_krig, sum = F)),
                   srad = extract_from_krige(data, srad_krig, sum = F))
 saveRDS(env, here("Data","Output","env_WS_kriged.rds"))
 
