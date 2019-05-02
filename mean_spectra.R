@@ -156,34 +156,69 @@ suber.pls.loo = cppls(cbind(prec, temp, srad, elevation, soil_m_0.07) ~ FTIR.SG2
 suber.pls.eval = evaluate_pls(npc, suber.pls.loo, suber, train = F)
 
 suber.plot.data<- data.frame(Species = factor(suber.pls.eval$fitdata$Species),
-                           Group = suber$Group,
-                           Location = suber$Location,
                            PC1 = suber.pls.eval$fitdata$FTIR.score[,1],
                            PC2 = suber.pls.eval$fitdata$FTIR.score[,2],
                            PC3 = suber.pls.eval$fitdata$FTIR.score[,3],
                            PC4 = suber.pls.eval$fitdata$FTIR.score[,4],
                            PC5 = suber.pls.eval$fitdata$FTIR.score[,5])
-suber.plot.data <- cbind(suber[,c(6,7,11,18:24)], suber.plot.data)
+suber.plot.data <- cbind(suber[,c(6,7,8,9,11,18:24)], suber.plot.data)
 suber.plot.data_sub <- subset(suber.plot.data, Group == "Arrabida" | Group == "Alijo" | Group == "Porto"| Group == "Coimbra")
 suber.plot.data_sub$Group<-factor(suber.plot.data_sub$Group)
 
-ggplot(suber.plot.data, aes(PC3, PC1)) +
+suber.prec.gg <- ggplot(suber.plot.data, aes(PC3, PC1)) +
   geom_point(size = 3, alpha = .1, show.legend = F) + 
-  coord_equal(ratio = 1, xlim = c(-15,15), ylim = c(-15,15)) +
-  theme_bw() + theme(text = element_text(size = 18)) +
+  coord_equal(ratio = 1, xlim = c(-15,17), ylim = c(-15,17)) +
+  theme_bw() + theme(text = element_text(size = 18), legend.position = "left",
+                     axis.title.x=element_blank(),
+                     axis.text.x=element_blank()) +
   xlab(paste0("PC 3 (",round(explvar(suber.pls.loo)[3],1)," %)")) + ylab(paste0("PC 1 (",round(explvar(suber.pls.loo)[1],1)," %)")) +
   geom_point(data = suber.plot.data_sub, inherit.aes = F,  aes(PC3, PC1, shape = Group, color = prec, size = 5)) +
   scale_shape_manual(values = c(15,17,19,18))+
-  scale_colour_gradient2(low = "#AFDFFF", mid = "#50B0FF",high = "#3347FF" , midpoint = 25, limits = c(0,50))+
+  scale_colour_gradient2(low = "#AFDFFF", mid = "#50B0FF",high = "#3347FF" , midpoint = 25, limits = c(0,50), name = "Precipitation")+
+  guides(size = F, shape = F)
+
+suber.lalo.gg <- ggplot(suber.plot.data, aes(PC3, PC1, color = Latitude, alpha = Longitude)) +
+  geom_point(size = 6) + 
+  coord_equal(ratio = 1, xlim = c(-15,17), ylim = c(-15,17)) +
+  theme_bw() + theme(text = element_text(size = 18),
+                     axis.title.x=element_blank(),
+                     axis.text.x=element_blank(),
+                     axis.title.y=element_blank(),
+                     axis.text.y=element_blank()) +
+  xlab(paste0("PC 3 (",round(explvar(suber.pls.loo)[3],1)," %)")) + ylab(paste0("PC 1 (",round(explvar(suber.pls.loo)[1],1)," %)"))+
+  scale_color_gradient2(low = "red", mid = "green", high = "dark blue", midpoint = mean(suber.plot.data$Latitude), name = "Latitude") +
+  scale_alpha_continuous(range = c(1,.1), breaks = c(-7,-8,-9), name = "Longitude")
+
+suber.temp.gg <-ggplot(suber.plot.data, aes(PC3, PC1)) +
+  geom_point(size = 3, alpha = .1, show.legend = F) + 
+  coord_equal(ratio = 1, xlim = c(-15,17), ylim = c(-15,17)) +
+  theme_bw() + theme(text = element_text(size = 18), legend.position = "left") +
+  xlab(paste0("PC 3 (",round(explvar(suber.pls.loo)[3],1)," %)")) + ylab(paste0("PC 1 (",round(explvar(suber.pls.loo)[1],1)," %)")) +
+  geom_point(data = suber.plot.data_sub, inherit.aes = F,  aes(PC3, PC1, shape = Group, color = temp, size = 5)) +
+  scale_shape_manual(values = c(15,17,19,18))+
+  scale_colour_gradient2(low = "#7AFE47", mid = "#FEE547",high = "#FF2903" , midpoint = 16, limits = c(12,20), name = "Temperature")+
+  guides(size = F, shape = F)
+
+suber.soil.gg <- ggplot(suber.plot.data, aes(PC3, PC1)) +
+  geom_point(size = 3, alpha = .1, show.legend = F) + 
+  coord_equal(ratio = 1, xlim = c(-15,17), ylim = c(-15,17)) +
+  theme_bw() + theme(text = element_text(size = 18),
+                     axis.title.y=element_blank(),
+                     axis.text.y=element_blank()) +
+  xlab(paste0("PC 3 (",round(explvar(suber.pls.loo)[3],1)," %)")) + ylab(paste0("PC 1 (",round(explvar(suber.pls.loo)[1],1)," %)")) +
+  geom_point(data = suber.plot.data_sub, inherit.aes = F,  aes(PC3, PC1, shape = Group, color = soil_m_0.07, size = 5)) +
+  scale_shape_manual(values = c(15,17,19,18))+
+  scale_colour_gradient(low = "#FF9B75",high = "#70BAFA", limits = c(.2,.4), name = "Soil Moisture")+
   guides(size = F)
 
-ggplot(suber.plot.data, aes(PC3, PC1, color = Latitude, alpha = Longitude)) +
-  geom_point(size = 6) + 
-  coord_equal(ratio = 1, xlim = c(-15,15), ylim = c(-15,15)) +
-  theme_bw() + theme(text = element_text(size = 18)) +
-  xlab(paste0("PC 3 (",round(explvar(suber.pls.loo)[3],1)," %)")) + ylab(paste0("PC 1 (",round(explvar(suber.pls.loo)[1],1)," %)"))+
-  scale_color_gradient2(low = "red", mid = "green", high = "dark blue", midpoint = median(suber.plot.data$Latitude)) +
-  scale_alpha_continuous(range = c(1,.1), breaks = c(-7,-8,-9))
+
+grobz <- lapply(list(suber.prec.gg, suber.lalo.gg, suber.temp.gg, suber.soil.gg), ggplotGrob)
+grobz.plot <- arrangeGrob( grobs = list(rbind(grobz[[1]], grobz[[3]], size = "last"),
+                                        rbind(grobz[[2]], grobz[[4]], size = "last")),
+                           ncol = 2)
+grid.draw(grobz.plot)
+
+ggsave("env_plots_suber.png", plot = grobz.plot, device = "png", path = here("R", "figures"), width = 35, height = 20, units = "cm", dpi = 600)
 
 ord.surf <- function(x, y){
   require(vegan)
