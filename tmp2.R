@@ -46,8 +46,7 @@ srad[,-1] <- as.data.frame(sapply(srad[,-1], NA2mean))
 temp[,-1] <- as.data.frame(sapply(temp[,-1], NA2mean))
 
 # calculate temp on 0 masl using adiabatic lapse rate
-temp[,grep(pattern = "*//*",colnames(temp), value = T)] <- sapply(grep(pattern = "*//*",colnames(temp), value = T), 
-                     function(x) lapsed_temp(as.numeric(stations[x, 2])/1000, 0, temp[,x]))
+temp[,grep(pattern = "*//*",colnames(temp), value = T)] <- sapply(grep(pattern = "*//*",colnames(temp), value = T), function(x) lapsed_temp(as.numeric(stations[x, 2])/1000, 0, temp[,x]))
 
 # Kriging (.1 = 10 km)
 prec_krig <- krige_env(prec, stations)

@@ -85,3 +85,36 @@ plot(v, vmod)
 library(lattice)
 
 levelplot(var1.pred ~ x + y | z, as.data.frame(res3D))
+
+
+# Locational separation
+NSEW_sep <- function(data){
+  qt_lat <- quantile(data$Latitude, probs = seq(0,1,.333))
+
+  result <- sapply(c(1:nrow(data)), function(x){
+    if(data$Latitude[x]<qt_lat[2]){
+      lat = "S"
+    }else if(data$Latitude[x]<qt_lat[3]){
+      lat = "Mid"
+    }else{
+      lat = "N"
+    }
+  qt_lon <- quantile(suber.plot.data[suber.plot.data$Latitude>qt_lat[3],"Longitude"], probs = seq(0,1,.5))    
+    if(lat == "N" & data$Longitude[x]<qt_lon[2]){
+      lon = "W"
+    }else if (lat == "N"){
+      lon = "E"
+    }else{
+      lon = "T"
+    }
+    if(lon == "T"){
+      paste0(lat)
+    }else{
+      paste0(lat,"_",lon)
+    }
+  })
+  return(result)
+}
+  
+
+
