@@ -50,9 +50,12 @@ pc_plots <- function(plot, loadings, pls, alpha = 1, size = 3) {
     scale_shape_manual(values = c(15:17)) +
     theme(legend.position = "none", text = element_text(size = 18))
   
-  plot1_ldg <- plot1 + geom_segment(data=loadings, aes(x=0, xend=PC1*100, y=0, yend=PC2*100),
+  lds1 =subset(loadings, Comp == "L" | Comp == "S")
+  plot1_ldg <- plot1 + geom_segment(data = lds1, inherit.aes = F,
+                                    aes(x=0, xend=PC1*100, y=0, yend=PC2*100),
                                     color = "red", arrow=arrow(length=unit(0.05,"npc"))) +
-    geom_text(data=loadings, aes(x=PC1*100,y=PC2*100,label=loadings$Comp,
+    geom_text(data=lds1, inherit.aes = F,
+              aes(x=PC1*100,y=PC2*100,label=Comp,
                                  hjust=0.5*(1-sign(PC1)),vjust=0.5*(1-sign(PC2))), color = "black", size=6)
   
   plot2 <- ggplot(plot,aes(PC3,PC4, color = Species)) +
@@ -64,9 +67,12 @@ pc_plots <- function(plot, loadings, pls, alpha = 1, size = 3) {
     scale_shape_manual(values = c(15:17)) +
     theme(text = element_text(size = 18))
   
-  plot2_ldg <- plot2 + geom_segment(data=loadings, aes(x=0, xend=PC3*100, y=0, yend=PC4*100),
+  lds2 =subset(loadings, Comp == "C" | Comp == "P")
+  plot2_ldg <- plot2 + geom_segment(data=lds2, inherit.aes = F,
+                                    aes(x=0, xend=PC3*100, y=0, yend=PC4*100),
                                     color = "red", arrow=arrow(length=unit(0.05,"npc"))) +
-    geom_text(data=loadings, aes(x=PC3*100,y=PC4*100,label=loadings$Comp,
+    geom_text(data=lds2, inherit.aes = F,
+              aes(x=PC3*100,y=PC4*100,label=Comp,
                                  hjust=0.5*(1-sign(PC3)),vjust=0.5*(1-sign(PC4))), color = "black", size=6)
   results <- list(plot1, plot1_ldg, plot2, plot2_ldg)
   return(results)
@@ -81,9 +87,9 @@ ldgs.data <- function(pca){
   ldngs <- as.data.frame(ldngs)
   ldngs$wavenumber <- as.numeric(rownames(ldngs))
   rownames(ldngs) <- round(as.numeric(rownames(ldngs)))
-  ldngs.peaks <- ldngs[c("1745","1462","721",
+  ldngs.peaks <- ldngs[c("1745", "1462", "721",
                          "1651", "1641", "1551", "1535",
-                         "1107","1076" , "1055", "1028", "995",
+                         "1107", "1076", "1055", "1028", "995",
                          "1605", "1516", "1171", "852", "833", "816"),-615]
   ldngs.peaks$Comp<-c(rep("L",3), rep("P", 4), rep("C",5), rep("S",6))
   colnames(ldngs.peaks)[1:10] <- c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10")
@@ -115,31 +121,34 @@ pls.cv <- crossval(pls, segments = 10)
 pls.cv.eval <- evaluate_pls(npc, pls.cv, data, train = T)
 
 pls.loo <- cppls(Species.HO ~ FTIR.SG2, npc, data = data[data$train,], scale = T, validation = "LOO")
-pls.loo.eval <- evaluate_pls(npc, pls.cv, data, train = T)
+pls.loo.eval <- evaluate_pls(npc, pls.loo, data, train = T)
 
-PLS.plot.data<- data.frame(Species = factor(pls.cv.eval$fitdata$Species),
+PLS.plot.data<- data.frame(Species = factor(pls.loo.eval$fitdata$Species),
                            Section = data$Section[data$train],
                            Group = data$Group[data$train],
                            Location = data$Location[data$train],
-                           PC1 = pls.cv.eval$fitdata$FTIR.score[,1],
-                           PC2 = pls.cv.eval$fitdata$FTIR.score[,2],
-                           PC3 = pls.cv.eval$fitdata$FTIR.score[,3],
-                           PC4 = pls.cv.eval$fitdata$FTIR.score[,4],
-                           PC5 = pls.cv.eval$fitdata$FTIR.score[,5])
+                           PC1 = pls.loo.eval$fitdata$FTIR.score[,1],
+                           PC2 = pls.loo.eval$fitdata$FTIR.score[,2],
+                           PC3 = pls.loo.eval$fitdata$FTIR.score[,3],
+                           PC4 = pls.loo.eval$fitdata$FTIR.score[,4],
+                           PC5 = pls.loo.eval$fitdata$FTIR.score[,5])
 
-pls.ldgs <- ldgs.data(pls.cv)[[2]]
-pls.cv.plots <- pc_plots(PLS.plot.data, pls.ldgs, pls.cv)
-pls.cv.plots.a <- pc_plots(PLS.plot.data, pls.ldgs, pls.cv, alpha = .5)
+pls.ldgs <- ldgs.data(pls.loo)[[2]]
+pls.cv.plots <- pc_plots(PLS.plot.data, pls.ldgs, pls.loo)
+pls.cv.plots.a <- pc_plots(PLS.plot.data, pls.ldgs, pls.loo, alpha = .5)
+
+
 
 grid.newpage()
-grid.draw(cbind(ggplotGrob(pls.cv.plots[[1]]), ggplotGrob(pls.cv.plots[[3]]), size = "last"))
+PCs <- grid.draw(cbind(ggplotGrob(pls.cv.plots[[1]]), ggplotGrob(pls.cv.plots[[3]]), size = "last"))
 
 grid.newpage()
-grid.draw(cbind(ggplotGrob(pls.cv.plots.a[[2]]), ggplotGrob(pls.cv.plots.a[[4]]), size = "last"))
+PC.lds <- grid.draw(cbind(ggplotGrob(pls.cv.plots.a[[2]]), ggplotGrob(pls.cv.plots.a[[4]]), size = "last"))
 
-ggsave("PC1_PC2.png", plot = pls.cv.plots[[1]], device = "png", path = here("R", "figures"), width = 20, height = 12, units = "cm", dpi = 600)
+ggsave("PCs.png", plot = PCs, device = "png", path = here("R", "figures"), width = 35, height = 10, units = "cm", dpi = 600)
 
-ggsave("PC3_PC4.png", plot = pls.cv.plots[[3]], device = "png", path = here("R", "figures"), width = 20, height = 12, units = "cm", dpi = 600)
+ggsave("PC_lds.png", plot = PC.lds, device = "png", path = here("R", "figures"), width = 35, height = 10, units = "cm", dpi = 600)
+
 
 ggplot(PLS.plot.data,aes(PC1,PC2, color = Species)) +
   geom_point(size = 3, alpha = .1) + coord_equal() +
