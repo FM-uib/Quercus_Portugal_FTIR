@@ -90,7 +90,7 @@ prec_dist <- nearest_neighbor(data, prec_calc, "mean_d", distances = T)
 srad_dist <- nearest_neighbor(data, srad_calc, "mean_d", distances = T)
 temp_dist <- nearest_neighbor(data, temp_calc, "mean_d", distances = T)
 dist <- data.frame(prec = prec_dist, srad = srad_dist, temp = temp_dist)
-dplyr::summarise_all(dist, funs(min,max, n))
+dplyr::summarise_all(dist, funs(min,max,mean))
 
 #   prec_min srad_min temp_min prec_max srad_max temp_max
 # 1 973.8502 6468.584 6468.584 43223.24 76356.09 76356.09  

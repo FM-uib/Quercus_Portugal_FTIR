@@ -31,9 +31,9 @@ srad$DATA <- as.Date(as.character(srad$DATA), format = "%d/%m/%Y")
 srad$Date_num <- as.numeric(srad$DATA)
 
 # sub select date range
-prec <- subset(prec, DATA > min(data$Date)-21 & DATA <= max(data$Date))
-temp <- subset(temp, DATA > min(data$Date)-21 & DATA <= max(data$Date))
-srad <- subset(srad, DATA > min(data$Date)-21 & DATA <= max(data$Date))
+prec <- subset(prec, DATA > min(data$Date)-31 & DATA <= max(data$Date))
+temp <- subset(temp, DATA > min(data$Date)-31 & DATA <= max(data$Date))
+srad <- subset(srad, DATA > min(data$Date)-31 & DATA <= max(data$Date))
 
 # delete stations with more than 5 missing dates of data
 prec <- prec[,-(which(sapply(c(1:ncol(prec)),function(x) sum(is.na(prec[,x]))) > 5, arr.ind = T))]
@@ -58,10 +58,10 @@ saveRDS(temp_krig, here("Data","Output","temp_krig_10km.rds"))
 saveRDS(srad_krig, here("Data","Output","srad_krig_10km.rds"))
 
 env <- data.frame(ID = data$ID,
-                  prec = extract_from_krige(data, prec_krig),
+                  prec = extract_from_krige(data, prec_krig, length = 30),
                   temp = lapsed_temp(old_alt = 0, new_alt = data$elevation/1000,
-                                     extract_from_krige(data, temp_krig, sum = F)),
-                  srad = extract_from_krige(data, srad_krig, sum = F))
+                                     extract_from_krige(data, temp_krig, length = 30, sum = F)),
+                  srad = extract_from_krige(data, srad_krig, sum = F, length = 30))
 saveRDS(env, here("Data","Output","env_WS_kriged.rds"))
 
 levelplot(var1.pred ~ x + y | z, as.data.frame(prec_krig))
