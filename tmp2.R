@@ -57,12 +57,23 @@ saveRDS(prec_krig, here("Data","Output","prec_krig_10km.rds"))
 saveRDS(temp_krig, here("Data","Output","temp_krig_10km.rds"))
 saveRDS(srad_krig, here("Data","Output","srad_krig_10km.rds"))
 
-env <- data.frame(ID = data$ID,
+prec_krig = readRDS(file = here("Data","Output","prec_krig_10km.rds"))
+temp_krig = readRDS(file = here("Data","Output","temp_krig_10km.rds"))
+srad_krig = readRDS(file = here("Data","Output","srad_krig_10km.rds"))
+
+env30 <- data.frame(ID = data$ID,
                   prec = extract_from_krige(data, prec_krig, length = 30),
                   temp = lapsed_temp(old_alt = 0, new_alt = data$elevation/1000,
                                      extract_from_krige(data, temp_krig, length = 30, sum = F)),
                   srad = extract_from_krige(data, srad_krig, sum = F, length = 30))
-saveRDS(env, here("Data","Output","env_WS_kriged.rds"))
+env14 <- data.frame(ID = data$ID,
+                    prec = extract_from_krige(data, prec_krig, length = 14),
+                    temp = lapsed_temp(old_alt = 0, new_alt = data$elevation/1000,
+                                       extract_from_krige(data, temp_krig, length = 14, sum = F)),
+                    srad = extract_from_krige(data, srad_krig, sum = F, length = 14))
+
+saveRDS(env30, here("Data","Output","env_WS_kriged_30.rds"))
+saveRDS(env14, here("Data","Output","env_WS_kriged_14.rds"))
 
 levelplot(var1.pred ~ x + y | z, as.data.frame(prec_krig))
 

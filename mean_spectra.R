@@ -112,6 +112,8 @@ data$env_april_WC = I(mean_spectra(subset$env_april_WC, subset$ID))
 
 saveRDS(data, file = here("Data","Input", "data_meaned.rds"))
 data = readRDS(file = here("Data", "Input", "data_meaned.rds"))
+env = readRDS(file = here("Data", "Output", "env_WS_kriged.rds"))
+soil_moist = readRDS(file = here("Data", "Output", "soil_moisture.rds"))
 
 npc = 50
 
@@ -157,10 +159,10 @@ ggplot(PLS.plot.data,aes(PC1,PC2, color = Species)) +
   geom_point(data = subset(PLS.plot.data, Species == "suber" & Group == "Arrabida" | Species == "suber" & Group == "Alijo"), aes(PC1, PC2, color = Group), size = 3) + stat_ellipse()
 
 #Suber env
-data <- cbind(data,dplyr::full_join(env,soil_moist)[,-1])
+data <- cbind(data,dplyr::full_join(env14,soil_moist)[,-1])
 
 suber = subset(data, Species == "suber")
-suber.pls.loo = cppls(cbind(prec, temp, srad, elevation, soil_m_0.07) ~ FTIR.SG2 + Latitude + Longitude, npc, data = suber, scale = T, validation = "LOO")
+suber.pls.loo = cppls(cbind(prec, temp, srad, elevation, soil_m_0.07, Latitude, Longitude) ~ FTIR.SG2, npc, data = suber, scale = T, validation = "LOO")
 #suber.pls.cv = crossval(suber.pls, segments = 5)
 suber.pls.eval = evaluate_pls(npc, suber.pls.loo, suber, train = F)
 
