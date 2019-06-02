@@ -152,6 +152,7 @@ ggsave("PCs.png", plot = PCs, device = "png", path = here("R", "figures"), width
 ggsave("PC_lds.png", plot = PC.lds, device = "png", path = here("R", "figures"), width = 35, height = 10, units = "cm", dpi = 600)
 
 
+
 ggplot(PLS.plot.data,aes(PC1,PC2, color = Species)) +
   geom_point(size = 3, alpha = .1) + coord_equal() +
   scale_color_discrete() + stat_ellipse() +
