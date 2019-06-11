@@ -1,9 +1,9 @@
 plsr_env <- function(data, form = "cbind(prec, temp, srad, elevation, soil_m_0.07, Latitude, Longitude) ~ FTIR.SG2", npc = 50, sel = c("prec", "temp", "srad", "elevation", "soil_m_0.07", "Latitude", "Longitude", "Group"), pls_method = "plsr"){
   require(pls)
   if(pls_method == "plsr"){
-    pls_loo = plsr(reformulate(form), npc, data = data, scale = T, validation = "LOO")
+    pls_loo = plsr(reformulate(form), npc, data = data, scale = T, validation = "LOO", jackknife = T)
   }else{
-    pls_loo = cppls(reformulate(form), npc, data = data, scale = T, validation = "LOO")
+    pls_loo = cppls(reformulate(form), npc, data = data, scale = T, validation = "LOO", jackknife = T)
   }
   plot_data = as.data.frame(pls_loo$scores[,])
   colnames(plot_data) = sapply(c(1:npc), function(x) paste0("PC",x))
@@ -85,21 +85,18 @@ plsr_env_plot <- function(data, data_sub, pls, x, y, lds){
                              ncol = 2)
   return(grobz.plot)}
 
-suber14_plsr <- plsr_env(suber, form = "cbind(prec, temp, srad, elevation, soil_m_0.07, Latitude, Longitude) ~ FTIR.SG2")
-suber30_plsr <- plsr_env(suber30, form = "cbind(prec, temp, srad, elevation, soil_m_0.07, Latitude, Longitude) ~ FTIR.SG2")
+data = readRDS(file = here("Data", "Input", "data_meaned.rds"))
+env14 = readRDS(file = here("Data", "Output", "env_WS_kriged_14.rds"))
+env30 = readRDS(file = here("Data", "Output", "env_WS_kriged_30.rds"))
 
-suber14_plot <- plsr_env_plot(data = suber14_plsr[[2]], 
-                              data_sub = subset(suber14_plsr[[2]], Group == "Arrabida" | Group == "Alijo" | Group == "Porto"| Group == "Coimbra"),
-                              pls = suber14_plsr[[1]], x = "PC2", y = "PC1", lds = TRUE)
-suber30_plot <- plsr_env_plot(data = suber30_plsr[[2]], 
-                              data_sub = subset(suber30_plsr[[2]], Group == "Arrabida" | Group == "Alijo" | Group == "Porto"| Group == "Coimbra"),
-                              pls = suber30_plsr[[1]], x = "PC2", y = "PC1", lds = TRUE)
+soil_moist = readRDS(file = here("Data", "Output", "soil_moisture.rds"))
 
-grid.newpage()
-grid.draw(suber14_plot)
 
-grid.newpage()
-grid.draw(suber30_plot)
+data14 <- cbind(data,dplyr::full_join(env14,soil_moist)[,-1])
+data30 <- cbind(data,dplyr::full_join(env30,soil_moist)[,-1])
+
+suber = subset(data14, Species == "suber")
+suber30 = subset(data30, Species == "suber")
 
 suber$env <- I(scale(as.matrix(suber[,c("prec", "temp", "srad", "elevation", "Latitude", "Longitude")])))
 suber30$env <- I(scale(as.matrix(suber30[,c("prec", "temp", "srad", "elevation", "Latitude", "Longitude")])))
@@ -212,8 +209,9 @@ f1 <- function(lst, fun) {
 tmp = data.frame(Comp = c(rep("PC1",5), rep("PC2",5)),Variable = rep(c("temp", "prec","srad","lat", "lon"),2), value = c(rnorm(5),rnorm(5,2)))
 
 
-loadings_plot <- function(pls_object, sel = c(1:4)){
+loadings_plot <- function(pls_object, sel = c(1:4), yload=T){
   library(reshape2)
+  
   peaks = data.frame(peaks_wn = as.numeric (c("1745", "1462", "721",
                                     "1651", "1641", "1551", "1535",
                                     "1107", "1076", "1055", "1028", "995",
@@ -226,15 +224,7 @@ loadings_plot <- function(pls_object, sel = c(1:4)){
   x_load = x_load[round(as.numeric(rownames(x_load))) %in% peaks$peaks_wn, ]
   x_load$ID = paste(peaks$peaks_c,peaks$peaks_wn)
   #x_load$col = as.factor(peaks$peaks_c)
-  
-  y_load = as.data.frame(pls_object$Yloadings[,])
-  colnames(y_load) = sapply(c(1:ncol(y_load)), function(x) paste0("PC",x))
-  y_load = y_load[,sel]
-  y_load$ID = rownames(y_load)
-  
   x_load = melt(x_load, id.vars = "ID")
-  y_load = melt(y_load, id.vars = "ID")
-  
   x_load_gg = ggplot(x_load, aes(ID, value, fill = rep(peaks$peaks_c,4))) + geom_col() + 
     facet_wrap(~variable, ncol = 1) +
     xlab("Wavenumbers") + ylab("Loadings") +
@@ -243,9 +233,21 @@ loadings_plot <- function(pls_object, sel = c(1:4)){
                        legend.position = "top",
                        legend.direction = "horizontal") +
     scale_fill_discrete(name = "Compounds", labels = c("Carbohydrates", "Lipids", "Protein", "Sporopollenin"))
-  y_load_gg = ggplot(y_load, aes(ID, value)) + geom_col() + facet_wrap(~variable, ncol = 1) +
-    xlab("Environmental Variables") + ylab("Loadings") +
-    scale_x_discrete(limits = c("prec","temp","srad","elevation","Latitude","Longitude")) +
-    theme_bw() + theme(text = element_text(size = 18))
-  return(list(x_load_gg, y_load_gg))
+  if(yload){
+    y_load = as.data.frame(pls_object$Yloadings[,])
+    colnames(y_load) = sapply(c(1:ncol(y_load)), function(x) paste0("PC",x))
+    y_load = y_load[,sel]
+    y_load$ID = rownames(y_load)
+    y_load = melt(y_load, id.vars = "ID")
+    y_load_gg = ggplot(y_load, aes(ID, value)) + geom_col() + facet_wrap(~variable, ncol = 1) +
+      xlab("Environmental Variables") + ylab("Loadings") +
+      scale_x_discrete(limits = c("prec","temp","srad","elevation","Latitude","Longitude")) +
+      theme_bw() + theme(text = element_text(size = 18))
+    return(list(x_load_gg, y_load_gg))
+  }else{
+    return(x_load_gg)
+  }
 }
+suber14_load = loadings_plot(suber14_ll_plsr[[1]])
+ggsave("env_14_xload.png", plot = (suber14_load[[1]]), device = "png", path = here("R", "figures"), width = 20, height = 30, units = "cm", dpi = 600)
+ggsave("env_14_yload.png", plot = (suber14_load[[2]]), device = "png", path = here("R", "figures"), width = 20, height = 30, units = "cm", dpi = 600)

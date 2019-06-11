@@ -135,6 +135,10 @@ PLS.plot.data<- data.frame(Species = factor(pls.loo.eval$fitdata$Species),
                            PC4 = pls.loo.eval$fitdata$FTIR.score[,4],
                            PC5 = pls.loo.eval$fitdata$FTIR.score[,5])
 
+plot_ly(x=PLS.plot.data$PC1,y=PLS.plot.data$PC2,z=PLS.plot.data$PC3,type = "scatter3d", mode = "markers", color = PLS.plot.data$Species)
+plot_ly(x=PLS.plot.data$PC1,y=PLS.plot.data$PC2,z=PLS.plot.data$PC4,type = "scatter3d", mode = "markers", color = PLS.plot.data$Species)
+plot_ly(x=PLS.plot.data$PC1,y=PLS.plot.data$PC3,z=PLS.plot.data$PC4,type = "scatter3d", mode = "markers", color = PLS.plot.data$Species)
+
 pls.ldgs <- ldgs.data(pls.loo)[[2]]
 pls.cv.plots <- pc_plots(PLS.plot.data, pls.ldgs, pls.loo)
 pls.cv.plots.a <- pc_plots(PLS.plot.data, pls.ldgs, pls.loo, alpha = .5)
