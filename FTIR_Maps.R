@@ -17,6 +17,7 @@ kml_to_df <- function(file){
 }
 
 load(file = here("Data", "Input", "data.rda"))
+data = readRDS(file = here("Data", "Input", "data_meaned.rds"))
 
 # Portugal Map
 
@@ -28,7 +29,7 @@ Portugal.gg <- ggplot(data = Portugal.df) +
   xlim(-9.5,-6) + ylim(37, 42.1) +
   coord_equal(ratio = 1) +
   theme_classic() +
-  geom_point(data = subset, aes(x = Longitude, y = Latitude, 
+  geom_point(data = data, aes(x = Longitude, y = Latitude, 
                                 color = Sub_Spec, shape = Section, size = 3)) +
   scale_shape_manual(values = c(15:17))
   
@@ -65,17 +66,26 @@ subset_ <- lat_lon_transform(x = subset_, variable = "new.mean.long", factor = "
                              offset = .05 * c(0,.5,0,0,0,0,0,0,-1.2,0,0,0,0,0,.5))
 
 # Map of Samples by location
+library(RStoolbox)
 
-Portugal.gg <- ggplot(data = Portugal.df) +
-  geom_path(aes(x=long, y=lat), color = "black") + 
-  xlim(-9.5,-6) + ylim(36.8, 42.2) +
-  coord_equal(ratio = 1) +
-  theme_bw() +
-  geom_point(data = subset_, aes(x = new.new.mean.long, y = new.new.mean.lat, 
-                                color = Sub_Spec, shape = Section, size = factor(n))) +
-  scale_shape_manual(values = c(15:17)) +
-  scale_size_manual(values = c(rep(2,3),rep(3,3),rep(4,8)),breaks = c(3,5,7), labels = c("< 3","4 - 6","> 7")) +
-  labs(x = "Longitude", y = "Latitude", size = "# of Trees", shape = "Quercus Section", color = "Species")
+elev <- readRDS(here("Data", "Output", "elevation_raster.rds"))
+elev@file@name = here("Data","Input","PRT1_alt.grd")
+
+
+  Portugal.gg <- ggplot() +
+    ggR(elev, geom_raster = TRUE, alpha = .4, ggLayer = T) + 
+    scale_fill_gradientn(colours = gray.colors(100, alpha = .4), name = "elevation", na.value = "white", guide = F) +
+  geom_path(data = Portugal.df, aes(x=long, y=lat), color = "black") + 
+    xlim(-10,-6) + ylim(36.8, 42.2) +
+    coord_equal(ratio = 1) +
+    theme_bw() +
+    geom_point(data = subset_, aes(x = new.new.mean.long, y = new.new.mean.lat, 
+                                   color = Sub_Spec, shape = Section, size = factor(n))) +
+    scale_shape_manual(values = c(15:17)) +
+    scale_size_manual(values = c(rep(2,3),rep(3,3),rep(4,8)),breaks = c(3,5,7), labels = c("< 3","4 - 6","> 7")) +
+    labs(x = "Longitude", y = "Latitude", size = "# of Trees", shape = "Quercus Section", color = "Species")
+
+
 
 ggsave("O:/PhD/Data/Portugal 2018/paper/Sample_map.png", plot = Portugal.gg, device = "png", 
        width = 15, height = 15, units = c("cm"), dpi = 600)
