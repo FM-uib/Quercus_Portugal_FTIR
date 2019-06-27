@@ -4,7 +4,7 @@ library(sp)
 library(gstat)
 library(dplyr)
 library(lattice)
-source(here("R","functions","02_env_functions.R"))
+source(here("R","functions","02_env.R"))
 load(here("Data", "Input", "environmental variables", "Stations.rda"))
 data = readRDS(file = here("Data", "Input", "data_mean.rds"))
 

@@ -1,5 +1,6 @@
 library(here)
 library(stringr)
+source(here("R", "functions", "01_data_proc.R"))
 
 # Load Meta Info Dataframe
 meta_info <- readRDS(here("Data", "Input", "meta_info.rds"))
@@ -21,13 +22,6 @@ data$FTIR <- as.matrix(spectra[, 2:ncol(spectra)])
 rownames(data$FTIR) <- data$ID
 
 ### Savitzky Golay derivative
-SG_smooth <- function(spectra, deriv){
-  library(EMSC)
-  res = SavitzkyGolay(spectra, deriv = deriv)
-  colnames(res) = colnames(spectra)
-  return(res)
-}
-
 data$FTIR.SG2 <- SG_smooth(data$FTIR, deriv = 2)
 data$FTIR.SG1 <- SG_smooth(data$FTIR, deriv = 1)
 rownames(data$FTIR.SG1) <- data$ID
@@ -37,12 +31,7 @@ rownames(data$FTIR.SG2) <- data$ID
 sp.filter <- c("broteroi", "robur", "estremadurensis", "coccifera", "rotundifolia", "suber")
 data <- data[data$Sub_Spec %in% sp.filter,]
 
-### Mean the spectra by 
-mean_spectra <- function(data, ID){
-  tmp = as.matrix(do.call(rbind,lapply(unique(ID), function(x) colMeans(data[ID == x,]))))
-  return(tmp)
-}
-
+### Mean the spectra by measurement
 data_mean <- data[data$MRep == "03", c(1:14)]
 data_mean$FTIR = I(mean_spectra(data$FTIR, data$ID))
 data_mean$FTIR.SG2 = I(mean_spectra(data$FTIR.SG2, data$ID))
