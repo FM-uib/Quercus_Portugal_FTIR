@@ -1,6 +1,6 @@
 library(here)
 library(stringr)
-source(here("R", "functions", "01_data_proc.R"))
+source(here("R", "functions", "01_Data_proc.R"))
 
 # Load Meta Info Dataframe
 meta_info <- readRDS(here("Data", "Input", "meta_info.rds"))

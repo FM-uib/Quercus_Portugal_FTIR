@@ -14,8 +14,13 @@ data = readRDS(file = here("Data", "Input", "data_mean.rds"))
 # elevation <- t[[1]]
 
 elevation = raster(here("Data", "Input","environmental variables","elevation", "PRT1_alt.grd"))
+
+# Extract elevation
 data$elevation = extract(elevation, data[,c("Longitude","Latitude")])
 
+
+## Following processes and kriges the environmental weather data (takes time)
+## Below is Code to load the env data used in the paper
 # Load Precipitation Data
 prec <- lapply(list.files(here("Data", "Input", "environmental variables", "prec"), full.names = T), 
                function(x) read_pt_weather_data(x))
@@ -61,6 +66,7 @@ saveRDS(prec_krig, here("Data","Output","prec_krig_10km.rds"))
 saveRDS(temp_krig, here("Data","Output","temp_krig_10km.rds"))
 saveRDS(srad_krig, here("Data","Output","srad_krig_10km.rds"))
 
+## Load prekriged environmental data 
 prec_krig = readRDS(file = here("Data","Output","prec_krig_10km.rds"))
 temp_krig = readRDS(file = here("Data","Output","temp_krig_10km.rds"))
 srad_krig = readRDS(file = here("Data","Output","srad_krig_10km.rds"))
