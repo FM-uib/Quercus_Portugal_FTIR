@@ -2,26 +2,23 @@ library(here)
 library(stringr)
 
 # Load Meta Info Dataframe
-load(here("Data","Input", "samples.df.rda"))
+meta_info <- readRDS(here("Data", "Input", "meta_info.rds"))
+
 # Load Spectra
 spectra <- read.csv(here("Data","Input","Quercus_ATRportugal.csv"), sep= ";")
-
 colnames(spectra)<-c("SID", str_sub(colnames(spectra)[-1],start = 2))
 
-samples.df<-samples.df[,1:13]
-
 # Sort spectra and Meta Info
-data <- data[order(data$SID),]
+meta_info <- meta_info[order(meta_info$SID),]
 spectra <- spectra[order(spectra$SID),]
 
 # Select Samples with measured spectra
-data <- samples.df[samples.df$SID %in% spectra$SID,]
+data <- meta_info[meta_info$SID %in% spectra$SID,]
 
 # Add spectra to data
 data$FTIR <- as.matrix(spectra[, 2:ncol(spectra)])
 
 rownames(data$FTIR) <- data$ID
-
 
 ### Savitzky Golay derivative
 SG_smooth <- function(spectra, deriv){
@@ -35,8 +32,10 @@ SG_smooth <- function(spectra, deriv){
 data$FTIR.SG2 <- SG_smooth(data$FTIR, deriv = 2)
 data$FTIR.SG1 <- SG_smooth(data$FTIR, deriv = 1)
 
-sp.filter <- c("coccifera", "broteroi", "robur", "estremadurensis", "rotundifolia", "suber")
+### Select six species of Quercus and create matrix for pls
+sp.filter <- c("broteroi", "robur", "estremadurensis", "coccifera", "rotundifolia", "suber")
 data <- data[data$Sub_Spec %in% sp.filter,]
 
+data$Sub_Spec <- factor(data$Sub_Spec, levels = sp.filter)
 data$Species.HO <- I(model.matrix(~Sub_Spec-1, data))
 colnames(data$Species.HO) <- str_sub(colnames(data$Species.HO), 9)
