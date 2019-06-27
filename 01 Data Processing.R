@@ -43,7 +43,7 @@ mean_spectra <- function(data, ID){
   return(tmp)
 }
 
-data_mean <- data[data$MRep == "03", c(1:13)]
+data_mean <- data[data$MRep == "03", c(1:14)]
 data_mean$FTIR = I(mean_spectra(data$FTIR, data$ID))
 data_mean$FTIR.SG2 = I(mean_spectra(data$FTIR.SG2, data$ID))
 data_mean$FTIR.SG2 = data_mean$FTIR.SG2[,c(1:5,data_mean$FTIR.SG2[1:5,(ncol(data_mean$FTIR.SG2)-4):ncol(data_mean$FTIR.SG2)])]
