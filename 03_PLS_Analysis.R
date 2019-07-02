@@ -19,6 +19,12 @@ f1 <- function(lst, fun) {
   round(apply(ar1, c(1, 2), fun), 2)
 }
 
+### Hierarchical
+tmp = subset(data, Section == "Ilex")
+tmp$Sub_Spec = factor(tmp$Sub_Spec)
+tmp$Species.HO <- I(model.matrix(~Sub_Spec-1, tmp))
+tmp_pls = cppls(Species.HO ~ FTIR.SG2, npc = 20, data = tmp, center = T, scale = T)
+
 ### Environmental Variables
 
 env14 = readRDS(file = here("Data", "Output", "env_WS_kriged_14.rds"))
