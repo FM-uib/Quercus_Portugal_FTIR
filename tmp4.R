@@ -248,6 +248,7 @@ loadings_plot <- function(pls_object, sel = c(1:4), yload=T){
     return(x_load_gg)
   }
 }
+
 suber14_load = loadings_plot(suber14_ll_plsr[[1]])
 ggsave("env_14_xload.png", plot = (suber14_load[[1]]), device = "png", path = here("R", "figures"), width = 20, height = 30, units = "cm", dpi = 600)
 ggsave("env_14_yload.png", plot = (suber14_load[[2]]), device = "png", path = here("R", "figures"), width = 20, height = 30, units = "cm", dpi = 600)
