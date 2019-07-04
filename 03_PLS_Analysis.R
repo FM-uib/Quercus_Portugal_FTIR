@@ -25,6 +25,17 @@ tmp$Sub_Spec = factor(tmp$Sub_Spec)
 tmp$Species.HO <- I(model.matrix(~Sub_Spec-1, tmp))
 tmp_pls = cppls(Species.HO ~ FTIR.SG2, npc = 20, data = tmp, center = T, scale = T)
 
+### SPLS
+cv = cv.spls(data$FTIR.SG2, data$Species.HO, eta = seq(.1,.9,.1), K = c(1:20))
+tmp = spls(data$FTIR.SG2, data$Species.HO, eta = cv$eta.opt, K = cv$K.opt)
+
+tmp = subset(data, Section == "Ilex")
+tmp$Sub_Spec = factor(tmp$Sub_Spec)
+tmp$Species.HO <- I(model.matrix(~Sub_Spec-1, tmp))
+spls_fold = fold_pls(tmp, 50, pls = F)
+conM = lapply(c(1:length(spls_fold)), function(x) prop.table(spls_fold[[x]]$table, {2}))
+f1(conM, mean)
+
 ### Environmental Variables
 
 env14 = readRDS(file = here("Data", "Output", "env_WS_kriged_14.rds"))
