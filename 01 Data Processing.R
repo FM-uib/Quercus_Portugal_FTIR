@@ -28,7 +28,8 @@ rownames(data$FTIR.SG1) <- data$ID
 rownames(data$FTIR.SG2) <- data$ID
 
 ### Select six species of Quercus
-sp.filter <- c("broteroi", "robur", "estremadurensis", "coccifera", "rotundifolia", "suber")
+levels(data$Sub_Spec)[1] = "faginea"
+sp.filter <- c("faginea", "robur", "estremadurensis", "coccifera", "rotundifolia", "suber")
 data <- data[data$Sub_Spec %in% sp.filter,]
 
 ### Mean the spectra by measurement

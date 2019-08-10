@@ -55,3 +55,4 @@ ggsave("O:/PhD/Data/Portugal 2018/paper/Sample_map.png", plot = Portugal.gg, dev
        width = 15, height = 15, units = c("cm"), dpi = 600)
 ggsave("O:/PhD/Data/Portugal 2018/paper/Sample_map.svg", plot = Portugal.gg, device = "svg", 
        width = 15, height = 15, units = c("cm"), dpi = 600)
+

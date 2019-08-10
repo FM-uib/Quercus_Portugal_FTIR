@@ -64,3 +64,10 @@ fold_pls <- function(data, folds, split = .6, npc = 20, pls = T){
   }
   return(folds_res)
 }
+
+mean_matrix <- function(lst, fun) {
+  n <- length(lst)
+  rc <- dim(lst[[1]])
+  ar1 <- array(unlist(lst), c(rc, n))
+  round(apply(ar1, c(1, 2), fun), 2)
+}
