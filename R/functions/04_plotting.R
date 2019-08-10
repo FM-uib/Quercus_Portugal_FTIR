@@ -62,7 +62,7 @@ pc_plots <- function(plot, expl_var, alpha = 1, size = 3) {
   plot2 <- ggplot(plot,aes(C3,C4, color = Species)) +
     geom_hline(yintercept = 0, alpha = .5) + geom_vline(xintercept = 0, alpha = .5) +
     geom_point(size = size, alpha = alpha, aes(shape = Section)) + coord_equal() +
-    scale_color_npg() + stat_ellipse() +
+    scale_color_npg(labels = c("Q. faginea","Q. robur","Q. r. ssp. estremadurensis","Q. coccifera","Q. rotundifolia","Q. suber"), guide = guide_legend(label.theme = element_text(angle = 0, face = "italic"))) + stat_ellipse() +
     xlab(paste0("Component 3 (",round(expl_var[3],1), " %)")) + ylab(paste0("Component 4 (",round(expl_var[4],1), " %)")) +
     scale_x_continuous(limits=c(-12, 12)) + scale_y_continuous(limits=c(-10, 10)) +
     scale_shape_manual(values = c(15:17)) + ggtitle("b)") +
