@@ -56,3 +56,7 @@ ggsave("O:/PhD/Data/Portugal 2018/paper/Sample_map.png", plot = Portugal.gg, dev
 ggsave("O:/PhD/Data/Portugal 2018/paper/Sample_map.svg", plot = Portugal.gg, device = "svg", 
        width = 15, height = 15, units = c("cm"), dpi = 600)
 
+
+plt = loadings_plot(pls_model)
+ggsave("xload.png", plot = (plt), device = "png", path = here("R", "figures"), width = 20, height = 30, units = "cm", dpi = 600)
+
