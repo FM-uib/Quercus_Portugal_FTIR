@@ -58,6 +58,10 @@ ggsave("O:/PhD/Data/Portugal 2018/paper/Sample_map.png", plot = Portugal.gg, dev
 ggsave("O:/PhD/Data/Portugal 2018/paper/Sample_map.svg", plot = Portugal.gg, device = "svg", 
        width = 15, height = 15, units = c("cm"), dpi = 600)
 
+gg = plot_mean_spectra(data)
+
+ggsave(here("R","figures","gg.png"),plot = gg, dpi = 600)
+
 plt = pc_plots(plot_data, expl_var = Expl_Var)
 grid.newpage()
 PCs <- grid.draw(cbind(ggplotGrob(plt[[1]]), ggplotGrob(plt[[2]]), size = "last"))
