@@ -43,3 +43,31 @@ loadings_plot <- function(pls_object, sel = c(1:4)){
     scale_fill_discrete(name = "Compounds", labels = c("Carbohydrates", "Lipids", "Protein", "Sporopollenin"))
   return(x_load_gg)
 }
+
+pc_plots <- function(plot, expl_var, alpha = 1, size = 3) {
+  require(ggplot2)
+  require(ggsci)
+  theme_set(theme_bw())
+  
+  plot1 <- ggplot(plot, aes(C1,C2, color = Species)) +
+    geom_hline(yintercept = 0, alpha = .5) + geom_vline(xintercept = 0, alpha = .5) +
+    geom_point(size = size, alpha = alpha, aes(shape = Section)) + coord_equal() +
+    scale_color_npg() + stat_ellipse() +
+    xlab(paste0("Component 1 (",round(expl_var[1],1), " %)")) + ylab(paste0("Component 2 (",round(expl_var[2],1), " %)")) + 
+    scale_x_continuous(limits=c(-30, 20)) + scale_y_continuous(limits=c(-15, 21)) +
+    scale_shape_manual(values = c(15:17)) + ggtitle("a)") +
+    theme(legend.position = "none", text = element_text(size = 18),
+          plot.title = element_text(margin = margin(t = -10, b = -20)))
+
+  plot2 <- ggplot(plot,aes(C3,C4, color = Species)) +
+    geom_hline(yintercept = 0, alpha = .5) + geom_vline(xintercept = 0, alpha = .5) +
+    geom_point(size = size, alpha = alpha, aes(shape = Section)) + coord_equal() +
+    scale_color_npg() + stat_ellipse() +
+    xlab(paste0("Component 3 (",round(expl_var[3],1), " %)")) + ylab(paste0("Component 4 (",round(expl_var[4],1), " %)")) +
+    scale_x_continuous(limits=c(-12, 12)) + scale_y_continuous(limits=c(-10, 10)) +
+    scale_shape_manual(values = c(15:17)) + ggtitle("b)") +
+    theme(text = element_text(size = 18), plot.title = element_text(margin = margin(t = -10, b = -20)))
+
+  results <- list(plot1, plot2)
+  return(results)
+}

@@ -85,5 +85,6 @@ mean_scores = function(folds, data, comps = 4){
     summarise_all(mean)
   
   plot_data$Species = data[plot_data$rID,"Sub_Spec"]
+  plot_data$Section = data[plot_data$rID,"Section"]
   return(plot_data)
 }

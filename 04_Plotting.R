@@ -3,6 +3,8 @@ library(ggplot2)
 library(rgdal)
 library(maptools)
 library(dplyr)
+library(grid)
+library(gridExtra)
 
 source(here("R", "functions", "04_plotting.R"))
 data = readRDS(file = here("Data", "Output", "data_mean.rds"))
@@ -56,7 +58,18 @@ ggsave("O:/PhD/Data/Portugal 2018/paper/Sample_map.png", plot = Portugal.gg, dev
 ggsave("O:/PhD/Data/Portugal 2018/paper/Sample_map.svg", plot = Portugal.gg, device = "svg", 
        width = 15, height = 15, units = c("cm"), dpi = 600)
 
+plt = pc_plots(plot_data, expl_var = Expl_Var)
+grid.newpage()
+PCs <- grid.draw(cbind(ggplotGrob(plt[[1]]), ggplotGrob(plt[[2]]), size = "last"))
+
+ggsave("PCs.png", plot = PCs, device = "png", path = here("R", "figures"), width = 35, height = 10, units = "cm", dpi = 600)
+
 
 plt = loadings_plot(pls_model)
 ggsave("xload.png", plot = (plt), device = "png", path = here("R", "figures"), width = 20, height = 30, units = "cm", dpi = 600)
+
+
+
+
+
 
