@@ -26,8 +26,10 @@ tmp$Species.HO <- I(model.matrix(~Sub_Spec-1, tmp))
 tmp_pls = cppls(Species.HO ~ FTIR.SG2, npc = 20, data = tmp, center = T, scale = T)
 
 ### SPLS
-cv = cv.spls(data$FTIR.SG2, data$Species.HO, eta = seq(.1,.9,.1), K = c(1:20))
+cv = cv.spls(data$FTIR.SG2, data$Species.HO, eta = seq(.9,.99,.01), K = c(1:20))
 tmp = spls(data$FTIR.SG2, data$Species.HO, eta = cv$eta.opt, K = cv$K.opt)
+tmp = splsda(data$FTIR.SG2, data$Sub_Spec, eta = .9, K = 9)
+tmp_pred = predict(tmp , newx = data$FTIR.SG2)
 
 tmp = subset(data, Section == "Ilex")
 tmp$Sub_Spec = factor(tmp$Sub_Spec)
