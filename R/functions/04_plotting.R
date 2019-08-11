@@ -46,7 +46,7 @@ loadings_plot <- function(folds, comps = 4){
   x_load$ID = paste(peaks$peaks_c,peaks$peaks_wn)
   #x_load$col = as.factor(peaks$peaks_c)
   x_load = melt(x_load[,-1], id.vars = "ID")
-  x_load$variable = factor(x_load$variable, labels = sapply(1:comps, function(x) paste0("Component ",x," (Explained Variance: ",round(Expl_Var[x]), "%)")))
+  x_load$variable = factor(x_load$variable, labels = sapply(1:comps, function(x) paste0("Component ",x," (",round(Expl_Var[x]), "%)")))
   x_load_gg = ggplot(x_load, aes(ID, value, fill = rep(peaks$peaks_c,4))) + geom_col() + 
     facet_wrap(~variable, ncol = 1) +
     labs(x = bquote('Wavenumbers in'~cm^-1), y = "Loadings") +
@@ -118,7 +118,7 @@ plot_mean_spectra<-function(data, sel = "Sub_Spec", sp = "FTIR"){
   plot_data <- spec_data %>%
     group_by(Section,Sub_Spec, Wavelength) %>%
     summarize(Absorbance = mean(Absorbance))
-  plot_data$Absorbance = plot_data$Absorbance + sort(rep(seq(0,by = .025,length.out = 6),624))
+  plot_data$Absorbance = plot_data$Absorbance + sort(rep(seq(0,by = .03,length.out = 6),624))
   ldngs <- data.frame( Wavelength = c(1745, 1462, 721,
                                       1655, 1641, 1551, 1535,
                                       1101, 1076, 1050, 1028, 985,
@@ -128,7 +128,7 @@ plot_mean_spectra<-function(data, sel = "Sub_Spec", sp = "FTIR"){
   g1 <- ggplot(data = plot_data, aes(Wavelength, Absorbance, color = Sub_Spec)) +
     geom_line(size = 1) + theme_bw() + scale_x_reverse(breaks = scales::pretty_breaks(n=10), limits = c(1900,420)) + 
     theme(axis.text.y=element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-    geom_dl(aes(label = Sub_Spec), method = list(dl.combine("last.points"), cex = 0.8)) +
+    geom_dl(aes(label = Sub_Spec), method = list(dl.combine("last.points"), cex = 1, fontface = "italic")) +
     scale_color_npg(labels = c("Q. faginea","Q. robur","Q. r. ssp. estremadurensis","Q. coccifera","Q. rotundifolia","Q. suber"), guide = "none") + 
     labs(x = bquote('Wavenumbers in'~cm^-1)) +
     geom_vline(data = ldngs, aes(xintercept = Wavelength), size = 2, alpha = .1) + 
