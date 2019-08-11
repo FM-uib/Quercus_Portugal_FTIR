@@ -40,7 +40,7 @@ library(RStoolbox)
 elev <- readRDS(here("Data", "Output", "elevation_raster.rds"))
 elev@file@name = here("Data", "Input", "environmental variables", "elevation", "PRT1_alt.grd")
 
-Portugal.gg <- ggplot() +
+figure1 <- ggplot() +
   ggR(elev, geom_raster = TRUE, alpha = .4, ggLayer = T) + 
   scale_fill_gradientn(colours = gray.colors(100, alpha = .4), name = "elevation", na.value = "white", guide = F) +
   geom_path(data = Portugal.df, aes(x=long, y=lat), color = "black") + 
@@ -53,27 +53,20 @@ Portugal.gg <- ggplot() +
   scale_size_manual(values = c(rep(2,3),rep(3,3),rep(4,8)),breaks = c(3,5,7), labels = c("< 3","4 - 6","> 7")) +
   labs(x = "Longitude", y = "Latitude", size = "# of Trees", shape = "Quercus Section", color = "Species")
 
-ggsave("O:/PhD/Data/Portugal 2018/paper/Sample_map.png", plot = Portugal.gg, device = "png", 
-       width = 15, height = 15, units = c("cm"), dpi = 600)
-ggsave("O:/PhD/Data/Portugal 2018/paper/Sample_map.svg", plot = Portugal.gg, device = "svg", 
+ggsave(here("R","figures","figure1.png"), plot = figure1, device = "png", 
        width = 15, height = 15, units = c("cm"), dpi = 600)
 
-gg = plot_mean_spectra(data)
 
-ggsave(here("R","figures","gg.png"),plot = gg, dpi = 600)
+figure2 = plot_mean_spectra(data)
+
+ggsave(here("R","figures","figure2.png"),width = 30, height = 20, units = "cm", plot = figure2, dpi = 600)
 
 plt = pc_plots(plot_data, expl_var = Expl_Var)
 grid.newpage()
-PCs <- grid.draw(cbind(ggplotGrob(plt[[1]]), ggplotGrob(plt[[2]]), size = "last"))
+figure3 <- grid.draw(cbind(ggplotGrob(plt[[1]]), ggplotGrob(plt[[2]]), size = "last"))
 
-ggsave("PCs.png", plot = PCs, device = "png", path = here("R", "figures"), width = 35, height = 10, units = "cm", dpi = 600)
-
-
-plt = loadings_plot(pls_model)
-ggsave("xload.png", plot = (plt), device = "png", path = here("R", "figures"), width = 20, height = 30, units = "cm", dpi = 600)
+ggsave("figure3.png", plot = figure3, device = "png", path = here("R", "figures"), width = 35, height = 10, units = "cm", dpi = 600)
 
 
-
-
-
-
+figure4 = loadings_plot(pls_model)
+ggsave("xload.png", plot = figure4, device = "png", path = here("R", "figures"), width = 20, height = 30, units = "cm", dpi = 600)
