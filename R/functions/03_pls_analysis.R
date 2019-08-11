@@ -71,20 +71,3 @@ mean_matrix <- function(lst, fun) {
   ar1 <- array(unlist(lst), c(rc, n))
   round(apply(ar1, c(1, 2), fun), 2)
 }
-
-mean_scores = function(folds, data, comps = 4){
-  tmp = lapply(c(1:length(folds)), function(x) folds[[x]]$`fitted model`$scores[,1:comps])
-  tmp = (do.call(rbind, tmp))
-  tmp2 = as.data.frame(tmp)
-  colnames(tmp2) = sapply(1:comps, function(x) paste0("C",x))
-  tmp2$rID = rownames(tmp)
-  
-  library(dplyr)
-  plot_data = tmp2 %>%
-    group_by(rID) %>%
-    summarise_all(mean)
-  
-  plot_data$Species = data[plot_data$rID,"Sub_Spec"]
-  plot_data$Section = data[plot_data$rID,"Section"]
-  return(plot_data)
-}

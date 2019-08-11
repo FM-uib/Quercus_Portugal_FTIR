@@ -9,6 +9,7 @@ rownames(data) = c(1:dim(data)[1])
 
 folds = 10
 folded_pls = fold_pls(data, folds, npc = 20)
+saveRDS(folded_pls, file = here("Data", "Output", "folded_pls.rds"))
 
 conM = lapply(c(1:length(folded_pls)), function(x) prop.table(folded_pls[[x]]$conf_matrix[[4]]$table,{2}))
 Expl_Var = colMeans(t(sapply(c(1:length(folded_pls)), function(x) explvar(folded_pls[[x]]$'fitted model'))))
@@ -18,5 +19,3 @@ mean_matrix(conM, mean)
 
 # standard deviation recall of folds
 mean_matrix(conM, sd)
-
-plot_data = mean_scores(folded_pls, data)
