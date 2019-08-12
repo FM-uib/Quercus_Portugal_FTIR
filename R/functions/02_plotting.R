@@ -1,8 +1,15 @@
-require(directlabels)
+library(directlabels)
+library(ggplot2)
+library(rgdal)
+library(maptools)
+library(dplyr)
+library(grid)
+library(gridExtra)
+library(reshape2)
+library(ggsci)
+library(RStoolbox)
 
 kml_to_df <- function(file){
-  require(rgdal)
-  require(ggplot2)
   ogr.file <- readOGR(file)
   ogr.file@data$id <- rownames(ogr.file@data)
   polygon <- fortify(ogr.file, region = "id")
@@ -19,9 +26,6 @@ lat_lon_transform <- function(x, variable, factor, offset){
 }
 
 loadings_plot <- function(folds, comps = 4){
-  library(reshape2)
-  library(ggplot2)
-  library(dplyr)
   Expl_Var = colMeans(t(sapply(c(1:length(folds)), function(x) explvar(folds[[x]]$'fitted model'))))
   
           
@@ -59,8 +63,6 @@ loadings_plot <- function(folds, comps = 4){
 }
 
 pc_plots <- function(folds, data, comps = 4, alpha = 1, size = 3) {
-  require(ggplot2)
-  require(ggsci)
   theme_set(theme_bw())
   expl_var = colMeans(t(sapply(c(1:length(folds)), function(x) explvar(folds[[x]]$'fitted model'))))
   
@@ -70,7 +72,7 @@ pc_plots <- function(folds, data, comps = 4, alpha = 1, size = 3) {
   colnames(tmp2) = sapply(1:comps, function(x) paste0("C",x))
   tmp2$rID = rownames(tmp)
   
-  library(dplyr)
+
   plot_data = tmp2 %>%
     group_by(rID) %>%
     summarise_all(mean)
@@ -102,8 +104,6 @@ pc_plots <- function(folds, data, comps = 4, alpha = 1, size = 3) {
 }
 
 plot_mean_spectra<-function(data, sel = "Sub_Spec", sp = "FTIR"){
-  require(ggplot2)
-  require(ggsci)
   theme_set(theme_bw())
   
   spec_data <- as.data.frame(unclass(data[,sp]))
@@ -161,10 +161,10 @@ map_plot = function(data){
                              offset = .05 * c(0,.5,0,0,0,0,0,0,-1.2,0,0,0,0,0,.5))
   
   ### Map of Samples by location
-  library(RStoolbox)
+
   
-  elev <- readRDS(here("Data", "Output", "elevation_raster.rds"))
-  elev@file@name = here("Data", "Input", "environmental variables", "elevation", "PRT1_alt.grd")
+  elev <- readRDS(here("Data", "Input", "map", "elevation_raster.rds"))
+  elev@file@name = here("Data", "Input", "map", "PRT1_alt.grd")
   
   figure1 <- ggplot() +
     ggR(elev, geom_raster = TRUE, alpha = .25, ggLayer = T) + 

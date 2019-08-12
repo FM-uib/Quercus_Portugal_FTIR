@@ -2,6 +2,7 @@
 .Rhistory
 *.RData
 .Ruserdata
+Data
 Data_safe
 R/figures
 R/tables

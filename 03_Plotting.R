@@ -1,12 +1,6 @@
 library(here)
-library(ggplot2)
-library(rgdal)
-library(maptools)
-library(dplyr)
-library(grid)
-library(gridExtra)
 
-source(here("R", "functions", "04_plotting.R"))
+source(here("R", "functions", "03_plotting.R"))
 data = readRDS(file = here("Data", "Output", "data_mean.rds"))
 folded_pls = readRDS(file = here("Data", "Output", "folded_pls.rds"))
 

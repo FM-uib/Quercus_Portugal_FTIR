@@ -3,21 +3,14 @@ library(stringr)
 source(here("R", "functions", "01_Data_proc.R"))
 
 # Load Meta Info Dataframe
-meta_info <- readRDS(here("Data", "Input", "meta_info.rds"))
+meta_info <- readRDS(here("Data", "Input", "data_metainfo.rds"))
 
 # Load Spectra
-spectra <- read.csv(here("Data","Input","Quercus_ATRportugal.csv"), sep= ";")
-colnames(spectra)<-c("SID", str_sub(colnames(spectra)[-1],start = 2))
-
-# Sort spectra and Meta Info
-meta_info <- meta_info[order(meta_info$SID),]
-spectra <- spectra[order(spectra$SID),]
-
-# Select Samples with measured spectra
-data <- meta_info[meta_info$SID %in% spectra$SID,]
+spectra <- readRDS(here("Data", "Input", "Portugal_QuercusATR.rds"))
 
 # Add spectra to data
-data$FTIR <- as.matrix(spectra[, 2:ncol(spectra)])
+meta_info$FTIR <- as.matrix(spectra[, 2:ncol(spectra)])
+data = meta_info
 
 rownames(data$FTIR) <- data$ID
 
@@ -28,8 +21,8 @@ rownames(data$FTIR.SG1) <- data$ID
 rownames(data$FTIR.SG2) <- data$ID
 
 ### Select six species of Quercus
-levels(data$Sub_Spec)[1] = "faginea"
-sp.filter <- c("faginea", "robur", "estremadurensis", "coccifera", "rotundifolia", "suber")
+
+sp.filter <- c("broteroi", "robur", "estremadurensis", "coccifera", "rotundifolia", "suber")
 data <- data[data$Sub_Spec %in% sp.filter,]
 
 ### Mean the spectra by measurement

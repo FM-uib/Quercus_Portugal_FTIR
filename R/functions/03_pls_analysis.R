@@ -1,33 +1,8 @@
-evaluate_pls <- function(npc, trained, data, train = TRUE){
-  error <- rep(0, npc)
-  con_M <- list()
-  if (train){
-    tested <- predict(trained, newdata = data[!data$train,], type = "score")
-    for (i in 1:npc) {
-      fitdata <- data.frame(Species = data$Sub_Spec[data$train], 
-                            FTIR.score = I(trained$scores[,1:i, drop = FALSE]))
-      testdata <- data.frame(Species = data$Sub_Spec[!data$train],
-                             FTIR.score = I(tested[,1:i,drop=FALSE]))
-      error[i] <- (nrow(tested) - sum(predict(lda(Species ~ FTIR.score, data = fitdata),
-                                              newdata = testdata)$class == testdata$Species))/nrow(tested)
-      con_M[[i]] <- I(confusionMatrix(predict(lda(Species ~ FTIR.score, data = fitdata), 
-                                              newdata = testdata)$class, testdata$Species))
-    }
-    result <- list("error" = error, "conf_matrix" = con_M, "fitdata" = fitdata, "testdata" = testdata)
-    return(result)
-  }else{
-    for (i in 1:npc) {
-      fitdata <- data.frame(Species = data$Sub_Spec, 
-                            FTIR.score = I(trained$scores[,1:i, drop = FALSE]))}
-    result <- list("fitdata" = fitdata)
-    return(result)
-  }
-}
+library(pls)
+library(MASS)
+library(caret)
 
 fold_pls <- function(data, folds, split = .6, npc = 20, pls = T){
-  require(pls)
-  require(MASS)
-  require(caret)
   folds_res = list()
   for(i in 1:folds){
     print(paste0("Training fold ",i," of ", folds))
@@ -69,5 +44,8 @@ mean_matrix <- function(lst, fun) {
   n <- length(lst)
   rc <- dim(lst[[1]])
   ar1 <- array(unlist(lst), c(rc, n))
-  round(apply(ar1, c(1, 2), fun), 2)
+  matrix_res = round(apply(ar1, c(1, 2), fun), 2)
+  rownames(matrix_res) = c("fag.", "rob", "r. est.", "coc", "rot", "sub")
+  colnames(matrix_res) = c("fag.", "rob", "r. est.", "coc", "rot", "sub")
+  return(matrix_res)
 }
