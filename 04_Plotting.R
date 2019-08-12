@@ -18,7 +18,6 @@ ggsave(here("R","figures","figure1.png"), plot = figure1, device = "png",
 
 
 figure2 = plot_mean_spectra(data)
-
 ggsave(here("R","figures","figure2.png"),width = 30, height = 20, units = "cm", plot = figure2, dpi = 600)
 
 plt = pc_plots(folded_pls, data = data)
