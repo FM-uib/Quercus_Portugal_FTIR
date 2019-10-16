@@ -50,7 +50,7 @@ fold_pls <- function(data, folds, split = .6, npc = 20, pls = T){
     
     if(pls){
           #do PLS
-      pls_loo <- cppls(Species.HO ~ FTIR.SG2, npc, data = data[data$train,], scale = T, validation = "LOO")
+      pls_loo <- cppls(Species.HO ~ FTIR.SG2, npc, data = data[data$train,], scale = F, center = F, validation = "LOO")
       print("Done")
       pls_loo_eval <- evaluate_pls(npc, pls_loo, data, train = T)
       pls_loo_eval[["fitted model"]] = pls_loo

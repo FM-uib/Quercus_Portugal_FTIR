@@ -1,6 +1,6 @@
 library(here)
 
-source(here("R", "functions", "02_pls_analysis.R"))
+source(here("R", "functions", "03_pls_analysis.R"))
 data = readRDS(file = here("Data", "Output", "data_mean.rds"))
 rownames(data) = c(1:dim(data)[1])
 
