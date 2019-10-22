@@ -20,14 +20,19 @@ spectral_processing <- function(spectra, poly = 2, width = 11){
 c(1:10) > 3 & c(1:10) < 8
 tmp = SavitzkyGolay(spectra_raw,2,11,2)
 wavenumbers = as.numeric(colnames(spectra_raw))
+colnames(tmp) = as.numeric(colnames(spectra_raw))
 tmp = tmp[,wavenumbers <= 1900 & wavenumbers >= 700]
 
 replicates = sapply(raw$Filename, str_sub, start = -13L , end = -6L)
 
-tmp_emsc = EMSC(tmp, degree = 6, replicates = replicates, rep_corr = .5)
+tmp_emsc = EMSC(tmp, degree = 6, replicates = replicates, rep_corr = .9)
 
 boris = read.csv(here("Data","Input","Quercus_ATRportugal2ndDerMSC.csv"), check.names = F)
 
 
 plot(colnames(boris)[-1],boris[1,-1], type = "l")
-plot(colnames(boris)[-1],sgolayfilt(spectra_raw[1,wavenumbers <= 1900 & wavenumbers >= 700],2,11,2), type = "l")
+plot(colnames(boris)[-1],sgolayfilt(spectra_raw[100,wavenumbers <= 1900 & wavenumbers >= 700],2,11,2), type = "l")
+
+plot(colnames(boris)[-1],boris[500,-1], type = "l")
+plot(colnames(tmp),tmp[which(samples == boris[500,1]),]*-1, type = "l")
+
