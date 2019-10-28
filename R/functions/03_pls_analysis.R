@@ -50,14 +50,14 @@ fold_pls <- function(data, folds, split = .6, npc = 20, pls = T){
     
     if(pls){
           #do PLS
-      pls_loo <- cppls(Species.HO ~ FTIR.SG2, npc, data = data[data$train,], scale = F, center = F, validation = "LOO")
+      pls_loo <- cppls(Species.HO ~ ftir_sg, npc, data = data[data$train,], scale = F, center = F, validation = "LOO")
       print("Done")
       pls_loo_eval <- evaluate_pls(npc, pls_loo, data, train = T)
       pls_loo_eval[["fitted model"]] = pls_loo
       folds_res[[paste0("Fold",i)]] = pls_loo_eval
     }else{
-      spls_fit = spls(data$FTIR.SG2[data$train,], data$Species.HO[data$train,], eta = .9, K = 9)
-      spls_pred = predict(spls_fit, type = "fit", newx = data$FTIR.SG2[!data$train,])
+      spls_fit = spls(data$ftir_sg[data$train,], data$Species.HO[data$train,], eta = .9, K = 9)
+      spls_pred = predict(spls_fit, type = "fit", newx = data$ftir_sg[!data$train,])
       conM = confusionMatrix(factor(max.col(spls_pred), levels = c(1:no_sp)), factor(max.col(data$Species.HO[!data$train,]), levels = c(1:no_sp)))
       folds_res[[paste0("Fold",i)]] = conM
     }

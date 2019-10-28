@@ -5,11 +5,11 @@ data = readRDS(file = here("Data", "Output", "data_mean.rds"))
 rownames(data) = c(1:dim(data)[1])
 
 
-folded_pls = fold_pls(data, 10, npc = 20)
-saveRDS(folded_pls, file = here("Data", "Output", "folded_pls.rds"))
+folded_pls = fold_pls(data_mean, 10, npc = 20)
+saveRDS(folded_pls, file = here("Data", "Output", "folded_pls_mean.rds"))
 
 confusion_matrix_4comp = lapply(c(1:length(folded_pls)), function(x) prop.table(folded_pls[[x]]$conf_matrix[[4]]$table,{2}))
-confusion_matrix_10comp = lapply(c(1:length(folded_pls)), function(x) prop.table(folded_pls[[x]]$conf_matrix[[4]]$table,{2}))
+confusion_matrix_10comp = lapply(c(1:length(folded_pls)), function(x) prop.table(folded_pls[[x]]$conf_matrix[[10]]$table,{2}))
 Expl_Var = colMeans(t(sapply(c(1:length(folded_pls)), function(x) explvar(folded_pls[[x]]$'fitted model'))))
 
 # 4 Components
