@@ -139,7 +139,7 @@ plot_mean_spectra<-function(data, sel = "Sub_Spec", sp = "FTIR"){
 
 map_plot = function(data){
   Portugal.df <- kml_to_df(here("Data", "Input", "map", "Iberian_Penin.shp"))
-  levels(data$Sub_Spec) = c("Q. faginea","Q. robur","Q. r. ssp. estremadurensis","Q. coccifera","Q. rotundifolia","Q. suber")
+  levels(data$Sub_Spec) = c("Q. faginea","Q. robur","Q. r. *ssp.* estremadurensis","Q. coccifera","Q. rotundifolia","Q. suber")
   ### Points of trees
   trees <- data[,c("ID", "Section", "Sub_Spec", "Group", "Location", "Latitude", "Longitude")]
   trees$Sub_Spec <- factor(trees$Sub_Spec)
@@ -172,12 +172,17 @@ map_plot = function(data){
     geom_path(data = Portugal.df, aes(x=long, y=lat), color = "black") + 
     xlim(-10,-6.3) + ylim(36.8, 42.1) +
     coord_equal(ratio = 1) +
-    theme_bw() +
+    theme_bw(base_size = 18) +
     geom_point(data = trees, aes(x = new.new.mean.long, y = new.new.mean.lat, 
                                  color = Sub_Spec, shape = Section, size = factor(n))) +
     scale_shape_manual(values = c(15:17)) +
     scale_size_manual(values = c(rep(2,3),rep(3,3),rep(4,8)),breaks = c(3,5,7), labels = c("< 3","4 - 6","> 7")) +
-    scale_color_npg(guide = guide_legend(label.theme = element_text(angle = 0, face = "italic"))) +
+    scale_color_npg(labels = c(expression(paste(italic("Q. faginea"))),
+                               expression(paste(italic("Q. robur"))),
+                               expression(paste(italic("Q. r."), " ssp. ", italic("estremadurensis"))),
+                               expression(paste(italic("Q. coccifera"))),
+                               expression(paste(italic("Q. rotundifolia"))),
+                               expression(paste(italic("Q. suber"))))) +#guide = guide_legend(label.theme = element_markdown(angle = 0))) + # face = italic
     labs(x = "Longitude", y = "Latitude", size = "No. of Trees", shape = "Quercus Section", color = "Species")
   return(figure1)
 }

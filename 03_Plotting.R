@@ -8,7 +8,7 @@ folded_pls = readRDS(file = here("Data", "Output", "folded_pls.rds"))
 figure1 = map_plot(data)
 
 ggsave(here("R","figures","figure1.png"), plot = figure1, device = "png", 
-       width = 15, height = 15, units = c("cm"), dpi = 600)
+       width = 20, height = 20, units = c("cm"), dpi = 600)
 
 
 figure2 = plot_mean_spectra(data)
