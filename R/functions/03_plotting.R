@@ -55,10 +55,12 @@ loadings_plot <- function(folds, comps = 4){
   x_load_gg = ggplot(x_load, aes(ID, value, fill = rep(peaks$peaks_c,4))) + geom_col() + 
     facet_wrap(~variable, ncol = 1) +
     labs(x = bquote('Wavenumbers in'~cm^-1), y = "Loadings") +
-    theme_bw() + theme(text = element_text(size = 18),
-                       axis.text.x = element_text(angle = 90, hjust = 1),
+    theme_bw(base_size = 20) + theme(#text = element_text(size = 20),
+                       axis.text.x = element_text(angle = 90, vjust = .5),
+                       plot.margin=unit(rep(0.2,4),"cm"),
                        legend.position = "top",
                        legend.direction = "horizontal") +
+    guides(fill=guide_legend(nrow=2,byrow=TRUE)) +
     scale_fill_discrete(name = "Compounds", labels = c("Carbohydrates", "Lipids", "Protein", "Sporopollenin"))
   return(x_load_gg)
 }
@@ -84,21 +86,33 @@ pc_plots <- function(folds, data, comps = 4, alpha = 1, size = 3) {
   plot1 <- ggplot(plot_data, aes(C1,C2, color = Species)) +
     geom_hline(yintercept = 0, alpha = .5) + geom_vline(xintercept = 0, alpha = .5) +
     geom_point(size = size, alpha = alpha, aes(shape = Section)) + coord_equal() +
-    scale_color_npg() + #stat_ellipse() +
+    scale_color_npg(labels = c(expression(paste(italic("Q. faginea"))),
+                               expression(paste(italic("Q. robur"))),
+                               expression(paste(italic("Q. r."), " ssp. ", italic("estremadurensis"))),
+                               expression(paste(italic("Q. coccifera"))),
+                               expression(paste(italic("Q. rotundifolia"))),
+                               expression(paste(italic("Q. suber"))))) +
     xlab(paste0("Component 1 (",round(expl_var[1],1), " %)")) + ylab(paste0("Component 2 (",round(expl_var[2],1), " %)")) + 
-    #scale_x_continuous(limits=c(-30, 20)) + scale_y_continuous(limits=c(-15, 21)) +
+    #scale_x_continuous(limits=c(-3, 2)) + #scale_y_continuous(limits=c(-15, 21)) +
     scale_shape_manual(values = c(15:17)) + ggtitle("a)") +
-    theme(legend.position = "none", text = element_text(size = 18),
-          plot.title = element_text(margin = margin(t = -10, b = -20)))
+    guides(shape = FALSE) +
+    theme(text = element_text(size = 18), 
+          plot.title = element_text(margin = margin(t = -10, b = -20)),
+          plot.margin=unit(rep(.5,4),"cm"),
+          axis.title.y = element_text(margin = margin(r = 20)))
 
   plot2 <- ggplot(plot_data,aes(C3,C4, color = Species)) +
     geom_hline(yintercept = 0, alpha = .5) + geom_vline(xintercept = 0, alpha = .5) +
-    geom_point(size = size, alpha = alpha, aes(shape = Section)) + coord_equal() +
-    scale_color_npg(labels = c("Q. faginea","Q. robur","Q. r. ssp. estremadurensis","Q. coccifera","Q. rotundifolia","Q. suber"), guide = guide_legend(label.theme = element_text(angle = 0, face = "italic"))) + #stat_ellipse() +
+    geom_point(size = size, alpha = alpha, aes(shape = Section)) + coord_equal(1) +
+    scale_color_npg() +
     xlab(paste0("Component 3 (",round(expl_var[3],1), " %)")) + ylab(paste0("Component 4 (",round(expl_var[4],1), " %)")) +
-    #scale_x_continuous(limits=c(-12, 12)) + scale_y_continuous(limits=c(-10, 10)) +
+    #scale_x_continuous(limits=c(-12, 12)) + #scale_y_continuous(limits=c(-10, 10)) +
     scale_shape_manual(values = c(15:17)) + ggtitle("b)") +
-    theme(text = element_text(size = 18), plot.title = element_text(margin = margin(t = -10, b = -20)))
+    guides(color = FALSE) +
+    theme(text = element_text(size = 18), 
+          plot.title = element_text(margin = margin(t = -10, b = -20)),
+          plot.margin=unit(rep(.5,4),"cm"),
+          axis.title.y = element_text(margin = margin(r = 20)))
 
   results <- list(plot1, plot2)
   return(results)
@@ -121,7 +135,7 @@ plot_mean_spectra<-function(data, sel = "Sub_Spec", sp = "ftir"){
     group_by(Section,Sub_Spec, Wavelength) %>%
     summarize(Absorbance = mean(Absorbance))
   plot_data = plot_data[order(plot_data$Sub_Spec, decreasing = T),]
-  plot_data$Absorbance = plot_data$Absorbance + sort(rep(seq(0,by = .06,length.out = 6),ncol(data[,sp])))
+  plot_data$Absorbance = plot_data$Absorbance + sort(rep(seq(0,by = .1,length.out = 6),ncol(data[,sp])))
 
   ldngs <- data.frame( Wavelength = c(1745, 1462, 721,
                                       1655, 1641, 1551, 1535,
