@@ -85,7 +85,7 @@ pc_plots <- function(folds, data, comps = 4, alpha = 1, size = 3) {
   
   plot1 <- ggplot(plot_data, aes(C1,C2, color = Species)) +
     geom_hline(yintercept = 0, alpha = .5) + geom_vline(xintercept = 0, alpha = .5) +
-    geom_point(size = size, alpha = alpha, aes(shape = Section)) + coord_equal() +
+    geom_point(size = size, alpha = alpha, aes(shape = Section)) + #coord_equal() +
     scale_color_npg(labels = c(expression(paste(italic("Q. faginea"))),
                                expression(paste(italic("Q. robur"))),
                                expression(paste(italic("Q. r."), " ssp. ", italic("estremadurensis"))),
@@ -103,7 +103,7 @@ pc_plots <- function(folds, data, comps = 4, alpha = 1, size = 3) {
 
   plot2 <- ggplot(plot_data,aes(C3,C4, color = Species)) +
     geom_hline(yintercept = 0, alpha = .5) + geom_vline(xintercept = 0, alpha = .5) +
-    geom_point(size = size, alpha = alpha, aes(shape = Section)) + coord_equal(1) +
+    geom_point(size = size, alpha = alpha, aes(shape = Section)) + #coord_equal(1) +
     scale_color_npg() +
     xlab(paste0("Component 3 (",round(expl_var[3],1), " %)")) + ylab(paste0("Component 4 (",round(expl_var[4],1), " %)")) +
     #scale_x_continuous(limits=c(-12, 12)) + #scale_y_continuous(limits=c(-10, 10)) +
