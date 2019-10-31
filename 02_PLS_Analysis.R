@@ -2,7 +2,7 @@ library(here)
 
 source(here("R", "functions", "02_pls_analysis.R"))
 data_mean = readRDS(file = here("Data", "Output", "data_mean.rds"))
-rownames(data) = c(1:dim(data)[1])
+#rownames(data) = c(1:dim(data)[1])
 
 
 folded_pls = fold_pls(data_mean, 100, npc = 20)

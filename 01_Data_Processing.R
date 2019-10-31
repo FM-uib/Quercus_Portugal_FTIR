@@ -32,6 +32,7 @@ data$ftir_sg = ftir_sg
 data_mean <- data[data$MRep == 03, c(2:15)]
 data_mean$ftir = I(mean_spectra(data$ftir, data$ID))
 data_mean$ftir_sg = I(mean_spectra(data$ftir_sg, data$ID))
+colnames(data_mean$ftir_sg) = colnames(data_mean$ftir)
 
 ### Create response matrix for pls
 data_mean$Species.HO <- I(model.matrix(~Sub_Spec-1, data_mean))

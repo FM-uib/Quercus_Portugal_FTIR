@@ -7,11 +7,14 @@ spectral_processing <- function(spectra, poly = 2, width = 11, deriv = 2, scale 
   #' @return returns the second derivate and smoothed input spectra
   #'
   require(EMSC)
-  M = SavitzkyGolay(spectra, poly = poly, width = width, deriv = deriv)
-  if(scale) M = M * -1000 else M = M * -1
-  colnames(M) = colnames(spectra)
-  wavenumbers = as.numeric(colnames(M))
-  M = M[,wavenumbers <= 1900 & wavenumbers >= 700]
+  sg_spectra = SavitzkyGolay(spectra, poly = poly, width = width, deriv = deriv)
+  
+  wavenumbers = as.numeric(colnames(spectra))  
+  sg_spectra_red = sg_spectra[,wavenumbers <= 1900 & wavenumbers >= 700]
+  emsc_spectra = EMSC(sg_spectra_red)
+  M = emsc_spectra$corrected
+  colnames(M) = colnames(spectra[,wavenumbers <= 1900 & wavenumbers >= 700])
+  #if(scale) M = M * -1000 else M = M * -1
   return(M)
 }
 
