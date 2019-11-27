@@ -12,14 +12,14 @@ library(pls)
 
 #c("#0061bf", "#4ba7ff", "#b8dcff", "#ffa172", "#e04c00", "#d7f500") #blue red yellow
 #c("#ffd6c1", "#ffa172", "#e04c00", "#f0b7ea", "#a95aa1", "#f5fc01") #red purple yellow
-colblind = scale_colour_manual(values =  c("#0061bf", "#4ba7ff", "#9ecfff", "#e04c00", "#ffa172", "#d7f500"), 
+colblind = scale_colour_manual(values =  c("#0061bf", "#4ba7ff", "#9ecfff", "#d73027", "#fc8d59", "#1b7837"), 
                                labels = c(expression(paste(italic("Q. faginea"))),
                                           expression(paste(italic("Q. robur"))),
                                           expression(paste(italic("Q. r."), " ssp. ", italic("estremadurensis"))),
                                           expression(paste(italic("Q. coccifera"))),
                                           expression(paste(italic("Q. rotundifolia"))),
                                           expression(paste(italic("Q. suber")))))
-scablind = scale_fill_manual(values =  c("#0061bf", "#4ba7ff", "#9ecfff", "#e04c00", "#ffa172", "#d7f500"), 
+scablind = scale_fill_manual(values =  c("#0061bf", "#4ba7ff", "#9ecfff", "#d73027", "#fc8d59", "#1b7837"), 
                                labels = c(expression(paste(italic("Q. faginea"))),
                                           expression(paste(italic("Q. robur"))),
                                           expression(paste(italic("Q. r."), " ssp. ", italic("estremadurensis"))),
@@ -103,12 +103,7 @@ pc_plots <- function(folds, data, comps = 4, alpha = 1, size = 3) {
   plot1 <- ggplot(plot_data, aes(C1,C2, color = Species)) +
     geom_hline(yintercept = 0, alpha = .5) + geom_vline(xintercept = 0, alpha = .5) +
     geom_point(size = size, alpha = alpha, aes(shape = Section)) + #coord_equal() +
-    scale_color_npg(labels = c(expression(paste(italic("Q. faginea"))),
-                               expression(paste(italic("Q. robur"))),
-                               expression(paste(italic("Q. r."), " ssp. ", italic("estremadurensis"))),
-                               expression(paste(italic("Q. coccifera"))),
-                               expression(paste(italic("Q. rotundifolia"))),
-                               expression(paste(italic("Q. suber"))))) +
+    colblind +
     xlab(paste0("Component 1 (",round(expl_var[1],1), " %)")) + ylab(paste0("Component 2 (",round(expl_var[2],1), " %)")) + 
     #scale_x_continuous(limits=c(-3, 2)) + #scale_y_continuous(limits=c(-15, 21)) +
     scale_shape_manual(values = c(15:17)) + ggtitle("a)") +
@@ -121,7 +116,7 @@ pc_plots <- function(folds, data, comps = 4, alpha = 1, size = 3) {
   plot2 <- ggplot(plot_data,aes(C3,C4, color = Species)) +
     geom_hline(yintercept = 0, alpha = .5) + geom_vline(xintercept = 0, alpha = .5) +
     geom_point(size = size, alpha = alpha, aes(shape = Section)) + #coord_equal(1) +
-    scale_color_npg() +
+    colblind +
     xlab(paste0("Component 3 (",round(expl_var[3],1), " %)")) + ylab(paste0("Component 4 (",round(expl_var[4],1), " %)")) +
     #scale_x_continuous(limits=c(-12, 12)) + #scale_y_continuous(limits=c(-10, 10)) +
     scale_shape_manual(values = c(15:17)) + ggtitle("b)") +
@@ -152,9 +147,9 @@ plot_mean_spectra<-function(data, sel = "Sub_Spec", sp = "ftir"){
     group_by(Section,Sub_Spec, Wavelength) %>%
     summarize(upr = mean(Absorbance) + sd(Absorbance), lwr = mean(Absorbance) - sd(Absorbance), Absorbance = mean(Absorbance))
   plot_data = plot_data[order(plot_data$Sub_Spec, decreasing = T),]
-  plot_data$Absorbance = plot_data$Absorbance + sort(rep(seq(0,by = .1,length.out = 6),ncol(data[,sp])))
-  plot_data$lwr = plot_data$lwr + sort(rep(seq(0,by = .1,length.out = 6),ncol(data[,sp])))
-  plot_data$upr = plot_data$upr + sort(rep(seq(0,by = .1,length.out = 6),ncol(data[,sp])))
+  plot_data$Absorbance = plot_data$Absorbance + sort(rep(seq(0,by = .115,length.out = 6),ncol(data[,sp])))
+  plot_data$lwr = plot_data$lwr + sort(rep(seq(0,by = .115,length.out = 6),ncol(data[,sp])))
+  plot_data$upr = plot_data$upr + sort(rep(seq(0,by = .115,length.out = 6),ncol(data[,sp])))
   tmp = plot_data
 
   ldngs <- data.frame( Wavelength = c(1745, 1462, 721,
@@ -172,7 +167,7 @@ plot_mean_spectra<-function(data, sel = "Sub_Spec", sp = "ftir"){
     scale_x_reverse(breaks = scales::pretty_breaks(n=10), limits = c(1900,700)) + 
     theme(axis.text.y=element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
     colblind +
-    labs(x = bquote('Wavenumbers in'~cm^-1), color = "Species")
+    labs(y = "Absorbance", x = bquote('Wavenumbers in'~cm^-1), color = "Species", fill = "Species")
 
   
   return(g1)
@@ -197,9 +192,9 @@ map_plot = function(data){
                              offset = .15 * c(.5,.5,-.5,.5,-.5,-.5))
   
   trees <- lat_lon_transform(x = trees, variable = "new.mean.lat", factor = "Group", 
-                             offset = .05 * c(0,-.5,0,0,0,0,0,0,-.5,0,0,0,0,0,1.5))
+                             offset = .05 * c(0,-.5,0,0,0,0,0,0,.5,0,0,0,0,0,1.5))
   trees <- lat_lon_transform(x = trees, variable = "new.mean.long", factor = "Group", 
-                             offset = .05 * c(0,.5,0,0,0,0,0,0,-1.2,0,0,0,0,0,.5))
+                             offset = .05 * c(0,.5,0,0,0,0,0,0,-1.2,0,0,0,0,0,-1.3))
   
   ### Map of Samples by location
 
@@ -218,12 +213,7 @@ map_plot = function(data){
                                  color = Sub_Spec, shape = Section, size = factor(n))) +
     scale_shape_manual(values = c(15:17)) +
     scale_size_manual(values = c(rep(2,3),rep(3,3),rep(4,8)),breaks = c(3,5,7), labels = c("< 3","4 - 6","> 7")) +
-    scale_color_npg(labels = c(expression(paste(italic("Q. faginea"))),
-                               expression(paste(italic("Q. robur"))),
-                               expression(paste(italic("Q. r."), " ssp. ", italic("estremadurensis"))),
-                               expression(paste(italic("Q. coccifera"))),
-                               expression(paste(italic("Q. rotundifolia"))),
-                               expression(paste(italic("Q. suber"))))) +
+    colblind +
     labs(x = "Longitude", y = "Latitude", size = "No. of Trees", shape = "Quercus Section", color = "Species")
   return(figure1)
 }
