@@ -10,6 +10,23 @@ library(ggsci)
 library(RStoolbox)
 library(pls)
 
+#c("#0061bf", "#4ba7ff", "#b8dcff", "#ffa172", "#e04c00", "#d7f500") #blue red yellow
+#c("#ffd6c1", "#ffa172", "#e04c00", "#f0b7ea", "#a95aa1", "#f5fc01") #red purple yellow
+colblind = scale_colour_manual(values =  c("#0061bf", "#4ba7ff", "#9ecfff", "#e04c00", "#ffa172", "#d7f500"), 
+                               labels = c(expression(paste(italic("Q. faginea"))),
+                                          expression(paste(italic("Q. robur"))),
+                                          expression(paste(italic("Q. r."), " ssp. ", italic("estremadurensis"))),
+                                          expression(paste(italic("Q. coccifera"))),
+                                          expression(paste(italic("Q. rotundifolia"))),
+                                          expression(paste(italic("Q. suber")))))
+scablind = scale_fill_manual(values =  c("#0061bf", "#4ba7ff", "#9ecfff", "#e04c00", "#ffa172", "#d7f500"), 
+                               labels = c(expression(paste(italic("Q. faginea"))),
+                                          expression(paste(italic("Q. robur"))),
+                                          expression(paste(italic("Q. r."), " ssp. ", italic("estremadurensis"))),
+                                          expression(paste(italic("Q. coccifera"))),
+                                          expression(paste(italic("Q. rotundifolia"))),
+                                          expression(paste(italic("Q. suber")))))
+
 kml_to_df <- function(file){
   ogr.file <- readOGR(file)
   ogr.file@data$id <- rownames(ogr.file@data)
@@ -133,9 +150,12 @@ plot_mean_spectra<-function(data, sel = "Sub_Spec", sp = "ftir"){
   spec_data[,sel] <- as.factor(spec_data[,sel])
   plot_data <- spec_data %>%
     group_by(Section,Sub_Spec, Wavelength) %>%
-    summarize(Absorbance = mean(Absorbance))
+    summarize(upr = mean(Absorbance) + sd(Absorbance), lwr = mean(Absorbance) - sd(Absorbance), Absorbance = mean(Absorbance))
   plot_data = plot_data[order(plot_data$Sub_Spec, decreasing = T),]
   plot_data$Absorbance = plot_data$Absorbance + sort(rep(seq(0,by = .1,length.out = 6),ncol(data[,sp])))
+  plot_data$lwr = plot_data$lwr + sort(rep(seq(0,by = .1,length.out = 6),ncol(data[,sp])))
+  plot_data$upr = plot_data$upr + sort(rep(seq(0,by = .1,length.out = 6),ncol(data[,sp])))
+  tmp = plot_data
 
   ldngs <- data.frame( Wavelength = c(1745, 1462, 721,
                                       1655, 1641, 1551, 1535,
@@ -143,20 +163,17 @@ plot_mean_spectra<-function(data, sel = "Sub_Spec", sp = "ftir"){
                                       1605, 1516, 1168, 852, 833, 816),
                        Compound = c(rep("L",3), rep("P", 4), rep("C",5), rep("S",6)))
   
-  g1 <- ggplot(data = plot_data, aes(Wavelength, Absorbance, color = Sub_Spec)) +
-    geom_line(size = 1) + 
+  g1 <- ggplot(data = ldngs, aes(xintercept = Wavelength)) +
+    geom_vline(data = ldngs, aes(xintercept = Wavelength), size = 2, alpha = .1) + 
+    geom_text(data = ldngs, aes(x = Wavelength , y = 0.01, label= Compound), inherit.aes = F) +
+    geom_line(data = plot_data, aes(Wavelength, Absorbance, color = Sub_Spec), size = 1) + 
+    geom_ribbon(data = plot_data, aes(x = Wavelength, ymin = lwr, ymax = upr, group = Sub_Spec, fill = Sub_Spec), inherit.aes = F, alpha = .3) + scablind +
     theme_bw(base_size = 20) + 
     scale_x_reverse(breaks = scales::pretty_breaks(n=10), limits = c(1900,700)) + 
     theme(axis.text.y=element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-    scale_color_npg(labels = c(expression(paste(italic("Q. faginea"))),
-                               expression(paste(italic("Q. robur"))),
-                               expression(paste(italic("Q. r."), " ssp. ", italic("estremadurensis"))),
-                               expression(paste(italic("Q. coccifera"))),
-                               expression(paste(italic("Q. rotundifolia"))),
-                               expression(paste(italic("Q. suber"))))) +
-    labs(x = bquote('Wavenumbers in'~cm^-1), color = "Species") +
-    geom_vline(data = ldngs, aes(xintercept = Wavelength), size = 2, alpha = .1) + 
-    geom_text(data = ldngs, aes(x = Wavelength , y = 0.01, label= Compound), inherit.aes = F) 
+    colblind +
+    labs(x = bquote('Wavenumbers in'~cm^-1), color = "Species")
+
   
   return(g1)
 }
