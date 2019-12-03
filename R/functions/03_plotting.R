@@ -6,20 +6,21 @@ library(dplyr)
 library(grid)
 library(gridExtra)
 library(reshape2)
-library(ggsci)
 library(RStoolbox)
 library(pls)
 
+# Alternate Color scales
+#c("#0061bf", "#4ba7ff", "#9ecfff", "#d73027", "#fc8d59", "#1b7837")
 #c("#0061bf", "#4ba7ff", "#b8dcff", "#ffa172", "#e04c00", "#d7f500") #blue red yellow
 #c("#ffd6c1", "#ffa172", "#e04c00", "#f0b7ea", "#a95aa1", "#f5fc01") #red purple yellow
-colblind = scale_colour_manual(values =  c("#0061bf", "#4ba7ff", "#9ecfff", "#d73027", "#fc8d59", "#1b7837"), 
+colblind = scale_colour_manual(values =  c("#440154","#0061bf", "#4ba7ff", "#e04c00", "#ffa172", "#fcf810"), 
                                labels = c(expression(paste(italic("Q. faginea"))),
                                           expression(paste(italic("Q. robur"))),
                                           expression(paste(italic("Q. r."), " ssp. ", italic("estremadurensis"))),
                                           expression(paste(italic("Q. coccifera"))),
                                           expression(paste(italic("Q. rotundifolia"))),
                                           expression(paste(italic("Q. suber")))))
-scablind = scale_fill_manual(values =  c("#0061bf", "#4ba7ff", "#9ecfff", "#d73027", "#fc8d59", "#1b7837"), 
+scablind = scale_fill_manual(values =  c("#440154","#0061bf", "#4ba7ff", "#e04c00", "#ffa172", "#fcf810"), 
                                labels = c(expression(paste(italic("Q. faginea"))),
                                           expression(paste(italic("Q. robur"))),
                                           expression(paste(italic("Q. r."), " ssp. ", italic("estremadurensis"))),
@@ -66,7 +67,6 @@ loadings_plot <- function(folds, comps = 4){
   
   x_load = x_load[round(x_load$Wavenumbers) %in% peaks$peaks_wn, ]
   x_load$ID = paste(peaks$peaks_c,peaks$peaks_wn)
-  #x_load$col = as.factor(peaks$peaks_c)
   x_load = melt(x_load[,-1], id.vars = "ID")
   x_load$variable = factor(x_load$variable, labels = sapply(1:comps, function(x) paste0("Component ",x," (",round(Expl_Var[x]), "%)")))
   x_load_gg = ggplot(x_load, aes(ID, value, fill = rep(peaks$peaks_c,4))) + geom_col() + 
@@ -104,8 +104,7 @@ pc_plots <- function(folds, data, comps = 4, alpha = 1, size = 3) {
     geom_hline(yintercept = 0, alpha = .5) + geom_vline(xintercept = 0, alpha = .5) +
     geom_point(size = size, alpha = alpha, aes(shape = Section)) + #coord_equal() +
     colblind +
-    xlab(paste0("Component 1 (",round(expl_var[1],1), " %)")) + ylab(paste0("Component 2 (",round(expl_var[2],1), " %)")) + 
-    #scale_x_continuous(limits=c(-3, 2)) + #scale_y_continuous(limits=c(-15, 21)) +
+    xlab(paste0("Component 1 (",round(expl_var[1],1), " %)")) + ylab(paste0("Component 2 (",round(expl_var[2],1), " %)")) +
     scale_shape_manual(values = c(15:17)) + ggtitle("a)") +
     guides(shape = FALSE) +
     theme(text = element_text(size = 18), 
@@ -118,7 +117,6 @@ pc_plots <- function(folds, data, comps = 4, alpha = 1, size = 3) {
     geom_point(size = size, alpha = alpha, aes(shape = Section)) + #coord_equal(1) +
     colblind +
     xlab(paste0("Component 3 (",round(expl_var[3],1), " %)")) + ylab(paste0("Component 4 (",round(expl_var[4],1), " %)")) +
-    #scale_x_continuous(limits=c(-12, 12)) + #scale_y_continuous(limits=c(-10, 10)) +
     scale_shape_manual(values = c(15:17)) + ggtitle("b)") +
     guides(color = FALSE) +
     theme(text = element_text(size = 18), 
@@ -136,9 +134,7 @@ plot_mean_spectra<-function(data, sel = "Sub_Spec", sp = "ftir"){
   spec_data <- as.data.frame(unclass(data[,sp]))
   spec_data$ID <- data$ID
   spec_data$Sub_Spec <- data[, sel]
-  #levels(spec_data$Sub_Spec) = c("Q. faginea","Q. robur","Q. r. ssp. estremadurensis","Q. coccifera","Q. rotundifolia","Q. suber")
   spec_data$Section <- data$Section
-  #spec_data = spec_data[order(spec_data$Sub_Spec),]
   spec_data <- melt(spec_data, id.vars = c("ID","Sub_Spec", "Section"))
   colnames(spec_data) <- c("ID",sel,"Section", "Wavelength", "Absorbance")
   spec_data$Wavelength<-as.numeric(as.character(spec_data$Wavelength))
