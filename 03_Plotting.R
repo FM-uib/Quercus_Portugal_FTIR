@@ -21,5 +21,5 @@ grid.draw(figure3)
 
 ggsave("figure3.png", plot = figure3, device = "png", path = here("R", "figures"), width = 20, height = 20, units = "cm", dpi = 600)
 
-  figure4 = loadings_plot(folded_pls)
+figure4 = loadings_plot(folded_pls)
 ggsave("figure4.png", plot = figure4, device = "png", path = here("R", "figures"), width = 20, height = 30, units = "cm", dpi = 600)
